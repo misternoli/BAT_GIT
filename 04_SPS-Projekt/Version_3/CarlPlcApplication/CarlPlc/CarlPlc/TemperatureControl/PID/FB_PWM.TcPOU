@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="FB_PWM" Id="{849a4c87-8406-4eb1-a849-917a58b91250}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PWM
+VAR_INPUT
+	pwmCycleTime 		: TIME := T#10S;
+	pwmDutyCycle		: REAL := 0.5;
+	reset				: BOOL := FALSE;
+END_VAR
+VAR_OUTPUT
+	Q					: BOOL := FALSE;
+END_VAR
+VAR
+	pwmTimeInMs			: INT	:= 0;
+	pwmTimer		: TON;
+	pwmLowTimer			: TON;
+	dutyCycleInMs		: TIME;
+	test				: INT;
+	internalReset 		: BOOL := FALSE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF pwmDutyCycle < 0 THEN
+	pwmDutyCycle := 0.0;
+END_IF
+
+IF reset OR internalReset THEN
+	pwmTimer(IN:= FALSE);
+	reset := FALSE;
+	internalReset := FALSE;
+ELSE
+	pwmTimeInMs := TIME_TO_INT(pwmCycleTime);
+	IF Q THEN
+		(* high  --> running falling timer *)
+		dutyCycleInMs := INT_TO_TIME(REAL_TO_INT(INT_TO_REAL(pwmTimeInMs)*pwmDutyCycle));
+		pwmTimer(IN:=TRUE, PT:=dutyCycleInMs);
+		IF pwmTimer.Q THEN
+			internalReset := TRUE;
+			Q := FALSE;
+		END_IF		
+	ELSE
+		(* low --> running rising timer *)
+		dutyCycleInMs := INT_TO_TIME(REAL_TO_INT(INT_TO_REAL(pwmTimeInMs)*(1.0-pwmDutyCycle)));
+		pwmTimer(IN:=TRUE, PT:=dutyCycleInMs);
+		IF pwmTimer.Q THEN
+			internalReset := TRUE;
+			Q := TRUE;
+		END_IF		
+	END_IF
+END_IF
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_PWM">
+      <LineId Id="80" Count="2" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="44" Count="4" />
+      <LineId Id="41" Count="1" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="51" Count="3" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

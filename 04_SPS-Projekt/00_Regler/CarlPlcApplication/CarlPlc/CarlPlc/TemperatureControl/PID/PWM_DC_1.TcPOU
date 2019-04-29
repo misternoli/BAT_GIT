@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="PWM_DC_1" Id="{5e4d6685-70e1-4873-8457-3a58ec87cb21}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PWM_DC_1
+VAR_INPUT
+	F : REAL;
+	DC : REAL;
+END_VAR
+VAR_OUTPUT
+	Q : BOOL;
+END_VAR
+VAR
+	clk: CLK_PRG;
+	pulse: TP_X;
+	tmp: REAL;
+END_VAR
+
+(*this signal generator generates a square wave signal which is specified by the frequency and the duty cycle
+*)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF F > 0.0 THEN
+	tmp := 1000.0 / F;
+	CLK(PT := REAL_TO_TIME(tmp));
+	Pulse(in := clk.Q, pt := REAL_TO_TIME(tmp * DC));
+	Q := pulse.Q;
+END_IF;
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PWM_DC_1">
+      <LineId Id="21" Count="6" />
+      <LineId Id="43" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="MAIN" Id="{6de127fa-b6f4-4656-b169-9e870eadfc1d}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[loopCounter := loopCounter + 1;
+
+PRG_ReadModbusSensorData();			//Temperatur von der Ph-Sonde
+
+(* PRG_HandleUserInputs(); *)
+
+PRG_UpdateMotor();					//Rührmotor
+
+//PRG_UpdateTemperatureControl();		
+
+PRG_UpdatePressureSensor();
+PRG_UpdateFlowRateSensor();
+
+Messung1();
+//Messung2();
+
+//PRG_UpdatePhControl();
+//PRG_UpdateGasSupply();			//Erste Messung nicht nötig
+//PRG_UpdateRoomTempRh();			//In Messungen implementiert
+//PRG_GasAnalysis();				//Nicht notwendig]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="71" Count="11" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="86" Count="2" />
+      <LineId Id="83" Count="2" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

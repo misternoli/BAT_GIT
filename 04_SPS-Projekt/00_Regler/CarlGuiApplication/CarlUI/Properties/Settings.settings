@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="CarlUI.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ADS_Connection_IP" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">5.37.251.68.1.1</Value>
+    </Setting>
+    <Setting Name="ADS_Connection_Port" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">801</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

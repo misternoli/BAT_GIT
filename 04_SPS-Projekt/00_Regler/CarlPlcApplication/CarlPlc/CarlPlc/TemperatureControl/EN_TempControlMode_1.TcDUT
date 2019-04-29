@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <DUT Name="EN_TempControlMode_1" Id="{1cdd0b24-858f-477d-aaf2-60002c7b414f}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE EN_TempControlMode_1 :
+(
+	TEMP_MODE_MANUAL := 1,
+	TEMP_MODE_HEATCOOL,
+	TEMP_MODE_STERI
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

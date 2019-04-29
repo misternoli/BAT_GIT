@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{66b5ad0d-3699-4f59-9c2f-45868fc22601}</ProjectGuid>
+    <AssemblyName>Temperaturmessungen</AssemblyName>
+    <Name>Temperaturmessungen</Name>
+    <RootNamespace>Temperaturmessungen</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Scope YT Project.tcscope">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+</Project>

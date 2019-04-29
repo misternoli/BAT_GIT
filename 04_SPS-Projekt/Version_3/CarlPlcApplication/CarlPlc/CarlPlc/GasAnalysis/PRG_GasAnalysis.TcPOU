@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="PRG_GasAnalysis" Id="{2729762f-0b3d-461e-abbd-d09813ea165e}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_GasAnalysis
+VAR
+	evtGasAnalysisStartStop		: DetectEvent;
+	evtGasAnalysisManualValve 	: DetectEvent;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ch4ValuemA := ch4SensorRaw*ch4CalibrationToMa.scaleFactor + ch4CalibrationToMa.offset;
+ch4ValuePercent := (ch4ValuemA-4.0)*(100.0/16.0);
+
+o2ValuemA := o2SensorRaw*o2CalibrationToMa.scaleFactor + o2CalibrationToMa.offset;
+o2ValuePercent := (o2ValuemA-4.0)*(25.0/16.0);
+
+
+
+(* CH4 Sensor Status*)
+IF ch4ValuemA > 3.9 THEN
+	(* running *)
+	ch4SensorStatus := 4;
+ELSIF (ch4ValuemA < 3.2 AND ch4ValuemA > 2.8) THEN
+	(* startup *)
+	ch4SensorStatus := 3;
+ELSIF (ch4ValuemA < 2.2 AND ch4ValuemA > 1.8) THEN
+	(* beam block *)
+	ch4SensorStatus := 2;
+ELSIF (ch4ValuemA < 1.2 AND ch4ValuemA > 0.8) THEN
+	(* fault *)
+	ch4SensorStatus := 1;
+ELSE
+	(* offline *)
+	ch4SensorStatus := 0;
+END_IF
+
+(* control switches *) 
+evtGasAnalysisStartStop(newSignalValue := gasAnalysisControlStartStop);
+IF evtGasAnalysisStartStop.eventDetected = TASTEVT_PositiveEdge THEN
+	gasAnalysisControlRunning := TRUE;
+END_IF
+
+IF evtGasAnalysisStartStop.eventDetected = TASTEVT_NegativeEdge THEN
+	gasAnalysisControlRunning := FALSE;
+END_IF
+
+
+IF gasAnalysisControlRunning THEN
+	IF ch4ValuePercent > ch4ValuePercentSet  THEN
+		gasAnalysisValveAutomatic := TRUE;
+	END_IF
+	
+	IF ch4ValuePercent < ch4ValuePercentSet -1  THEN
+		gasAnalysisValveAutomatic := FALSE;
+	END_IF
+ELSE 
+	gasAnalysisValveAutomatic := FALSE;
+END_IF
+
+
+evtGasAnalysisManualValve(newSignalValue := gasAnalysisControlManual);
+IF evtGasAnalysisManualValve.eventDetected = TASTEVT_PositiveEdge THEN
+	gasAnalysisValveManual := TRUE;
+END_IF
+
+IF evtGasAnalysisManualValve.eventDetected = TASTEVT_NegativeEdge THEN
+	gasAnalysisValveManual := FALSE;
+END_IF
+
+reactorPressureOutletValve := gasAnalysisValveManual OR gasAnalysisValveAutomatic;
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_GasAnalysis">
+      <LineId Id="12" Count="0" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="19" Count="1" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="31" Count="5" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="54" Count="3" />
+      <LineId Id="59" Count="1" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="66" Count="1" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="84" Count="4" />
+      <LineId Id="108" Count="1" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="93" Count="1" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="98" Count="6" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="68" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

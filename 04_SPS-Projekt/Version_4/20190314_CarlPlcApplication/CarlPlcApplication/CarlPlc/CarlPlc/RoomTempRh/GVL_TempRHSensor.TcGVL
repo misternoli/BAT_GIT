@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <GVL Name="GVL_TempRHSensor" Id="{5e2116c0-56dc-4a51-a7f1-114719acc874}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	roomTempRaw			AT %I*	: INT;
+	roomRhRaw 			AT %I*	: INT;	
+	
+	roomTemp			: REAL;
+	roomRh				: REAL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

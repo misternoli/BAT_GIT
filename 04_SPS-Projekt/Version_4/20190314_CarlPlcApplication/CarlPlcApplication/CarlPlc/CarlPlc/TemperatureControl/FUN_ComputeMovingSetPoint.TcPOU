@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="FUN_ComputeMovingSetPoint" Id="{2bde4663-6738-4648-b570-8ccbfe30ee14}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION FUN_ComputeMovingSetPoint : REAL
+VAR_INPUT
+	currentTemp 		: REAL;
+	targetSetPoint 		: REAL;
+END_VAR	
+VAR
+	deltaTemp 			: REAL;
+	sign				: REAL;
+	maxDeltaTemp		: REAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[deltaTemp := targetSetPoint - currentTemp;
+maxDeltaTemp := 10.0;
+
+IF deltaTemp >= 0 THEN
+	sign := 1.0;
+ELSE
+	sign := -1.0;
+END_IF
+
+IF ABS(deltaTemp) > maxDeltaTemp THEN
+	FUN_ComputeMovingSetPoint := sign*maxDeltaTemp + currentTemp;
+ELSE
+	FUN_ComputeMovingSetPoint := targetSetPoint;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FUN_ComputeMovingSetPoint">
+      <LineId Id="10" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="15" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

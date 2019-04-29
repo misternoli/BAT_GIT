@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="PRG_ReadModbusSensorData" Id="{70e2d931-711b-4294-8461-921be22fe8d2}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_ReadModbusSensorData
+VAR
+	
+	CurrentReadTarget			: EN_ModbusReadTarget := EN_ModbusReadTarget.READ_TARGET_PH;
+	
+	ProcessValueRegister		: WORD := 2089;
+	TemperatureRegister			: WORD := 2409;
+	PhSensorUnitId				: BYTE := 1;
+	OrpSensorUnitId				: BYTE := 2;
+	RegQuantityToRead			: WORD :=10;
+	
+	currentUnitId				: BYTE := PhSensorUnitId;
+	currentModbusRegister		: WORD := ProcessValueRegister;
+
+	ModbusBusy					: BOOL := FALSE;
+
+	(* diagnostics *)	
+	LastModbusError				: ST_ModbusErrorDiagnostics;
+	LastErrorstate				: INT;
+	CurrentState				: INT;
+	CounterError				: INT := 0;
+	CounterSuccess				: INT := 0;
+	
+	firstCall					: BOOL := TRUE;	
+	
+	scaleFactorPh				: REAL :=   1.219512195; (* 0.980167935 *);  		
+	offsetPh					: REAL := 	-1.280487805; (* -0.0216290391086993 *);	
+
+
+	scaleFactorOrp				: REAL := 0.999321727334388;
+	offsetOrp					: REAL := 0.0;			
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* looping through pH, pH-T, ORP, ORP-T reading the latest values *)
+IF firstCall THEN
+	PhModbus.ReadRegs( Execute := FALSE);
+	OrpModbus.ReadRegs( Execute := FALSE);
+	firstCall := FALSE;
+END_IF	
+
+CASE  CurrentReadTarget OF 
+	EN_ModbusReadTarget.READ_TARGET_PH:
+		PhModbus.Readregs (UnitID 		:= PhSensorUnitId ,
+   							Quantity   	:= RegQuantityToRead,
+   							MBAddr    	:= ProcessValueRegister,
+   							cbLength    := RegQuantityToRead*2,
+   							pMemoryAddr := ADR(PhValueArrayIn),   
+   							Execute    	:= TRUE,
+   							Timeout    	:= T#300MS,
+							Busy 		=> ModbusBusy	
+						  );
+		
+		IF NOT ModbusBusy THEN
+			PhModbus.ReadRegs(Execute:= FALSE);
+			CurrentReadTarget := EN_ModbusReadTarget.READ_TARGET_PH_T;
+	
+			IF PhModbus.Error THEN
+				LastModbusError 	:= PhModbus.ErrorDiagnostics;
+				LastErrorstate 		:= CurrentState;
+				CounterError 		:= CounterError + 1;
+				phLastReadingValid 	:= FALSE;
+			ELSE
+				CounterSuccess 		:= CounterSuccess + 1;
+				phLastReadingValid 	:= TRUE;
+				phCurrent			:= PhValueArrayIn[1]*scaleFactorPh + offsetPh;
+			END_IF
+		END_IF
+		
+	EN_ModbusReadTarget.READ_TARGET_PH_T:
+		PhModbus.Readregs (UnitID 		:= PhSensorUnitId ,
+   							Quantity   	:= RegQuantityToRead,
+   							MBAddr    	:= TemperatureRegister,
+   							cbLength    := RegQuantityToRead*2,
+   							pMemoryAddr := ADR(TPhValueArrayIn),   
+   							Execute    	:= TRUE,
+   							Timeout    	:= T#300MS,
+							Busy 		=> ModbusBusy	
+						  );
+		
+		IF NOT ModbusBusy THEN
+			PhModbus.ReadRegs(Execute:= FALSE);	
+			CurrentReadTarget := EN_ModbusReadTarget.READ_TARGET_ORP;
+
+			IF PhModbus.Error THEN
+				LastModbusError 	:= PhModbus.ErrorDiagnostics;
+				LastErrorstate 		:= CurrentState;
+				CounterError 		:= CounterError + 1;
+				tPhLastReadingValid := FALSE;
+			ELSE
+				CounterSuccess 		:= CounterSuccess + 1;
+				tPhLastReadingValid := TRUE;
+				tPhCurrent			:= TPhValueArrayIn[1];
+			END_IF
+		END_IF
+	
+	EN_ModbusReadTarget.READ_TARGET_ORP:
+		OrpModbus.Readregs (UnitID 		:= OrpSensorUnitId ,
+   							Quantity   	:= RegQuantityToRead,
+   							MBAddr    	:= ProcessValueRegister,
+   							cbLength    := RegQuantityToRead*2,
+   							pMemoryAddr := ADR(OrpValueArrayIn),   
+   							Execute    	:= TRUE,
+   							Timeout    	:= T#300MS,
+							Busy 		=> ModbusBusy	
+						  );
+		
+		IF NOT ModbusBusy THEN
+			OrpModbus.ReadRegs(Execute:= FALSE);	
+			CurrentReadTarget := EN_ModbusReadTarget.READ_TARGET_ORP_T;
+
+			IF OrpModbus.Error THEN
+				LastModbusError 	:= OrpModbus.ErrorDiagnostics;
+				LastErrorstate 		:= CurrentState;
+				CounterError 		:= CounterError + 1;
+				orpLastReadingValid := FALSE;
+			ELSE
+				CounterSuccess 		:= CounterSuccess + 1;
+				orpLastReadingValid := TRUE;
+				orpCurrent			:= OrpValueArrayIn[1]*scaleFactorOrp + offsetOrp;
+			END_IF
+		END_IF
+
+	EN_ModbusReadTarget.READ_TARGET_ORP_T:
+
+		OrpModbus.Readregs (UnitID 		:= OrpSensorUnitId ,
+   							Quantity   	:= RegQuantityToRead,
+   							MBAddr    	:= TemperatureRegister,
+   							cbLength    := RegQuantityToRead*2,
+   							pMemoryAddr := ADR(TOrpValueArrayIn),   
+   							Execute    	:= TRUE,
+   							Timeout    	:= T#300MS,
+							Busy 		=> ModbusBusy	
+						  );
+		
+		IF NOT ModbusBusy THEN
+			OrpModbus.ReadRegs(Execute:= FALSE);	
+			CurrentReadTarget := EN_ModbusReadTarget.READ_TARGET_PH;
+
+			IF OrpModbus.Error THEN
+				LastModbusError := OrpModbus.ErrorDiagnostics;
+				LastErrorstate 	:= CurrentState;
+				CounterError 	:= CounterError + 1;
+				tOrpLastReadingValid := FALSE;
+			ELSE
+				CounterSuccess 	:= CounterSuccess + 1;
+				tOrpLastReadingValid := TRUE;
+				tOrpCurrent	:= TOrpValueArrayIn[1];
+			END_IF
+		END_IF
+	
+END_CASE
+			
+IF tPhLastReadingValid AND tOrpLastReadingValid THEN
+	currentMeanTemp := (tPhCurrent + tOrpCurrent)/2.0;
+	currentTempValid := TRUE;
+ELSIF tPhLastReadingValid AND NOT tOrpLastReadingValid THEN
+	currentMeanTemp := tPhCurrent;
+	currentTempValid := TRUE;
+ELSIF NOT tPhLastReadingValid AND tOrpLastReadingValid THEN
+	currentMeanTemp := tOrpCurrent;
+	currentTempValid := TRUE;
+ELSE 
+	(* no valid temperature signal !! signal to stop temperature control, if active *)
+	currentTempValid := FALSE;
+END_IF
+							]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_ReadModbusSensorData">
+      <LineId Id="5" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="153" Count="1" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="279" Count="9" />
+      <LineId Id="290" Count="1" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="376" Count="0" />
+      <LineId Id="309" Count="7" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="317" Count="0" />
+      <LineId Id="292" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="322" Count="11" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="375" Count="0" />
+      <LineId Id="334" Count="7" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="342" Count="0" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="319" Count="0" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="347" Count="0" />
+      <LineId Id="352" Count="10" />
+      <LineId Id="378" Count="1" />
+      <LineId Id="363" Count="7" />
+      <LineId Id="413" Count="0" />
+      <LineId Id="371" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="381" Count="0" />
+      <LineId Id="384" Count="21" />
+      <LineId Id="408" Count="0" />
+      <LineId Id="406" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="414" Count="0" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="424" Count="0" />
+      <LineId Id="416" Count="1" />
+      <LineId Id="425" Count="0" />
+      <LineId Id="418" Count="0" />
+      <LineId Id="420" Count="0" />
+      <LineId Id="426" Count="0" />
+      <LineId Id="421" Count="1" />
+      <LineId Id="427" Count="0" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="69" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

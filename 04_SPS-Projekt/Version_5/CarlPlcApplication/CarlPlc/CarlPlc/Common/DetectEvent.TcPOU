@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="DetectEvent" Id="{a4962f64-360c-4685-bf7d-8ede7856c5cf}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK DetectEvent
+VAR_INPUT
+	newSignalValue 			: BOOL 	:= FALSE;
+	detectLongClick			: BOOL	:= FALSE;
+	detectDoubleClick			: BOOL	:= FALSE;
+	detectPosNegClick		: BOOL 	:= FALSE;
+	detectSuperLongClick		: BOOL 	:= FALSE;
+	longClickTime			: TIME 	:= t#1000ms;	(* Default value 1000 (ms) *)
+	doubleClickTime			: TIME	:= t#1000ms;	(* Default value 300 (ms) *)
+	posNegClickTime 		: TIME	:= t#300ms;	(* Default value 300 (ms) *)
+	superLongClickTime		: TIME	:= t#6000ms;
+	actualValueTimerNegEdge : BOOL	:= FALSE;
+END_VAR
+VAR_OUTPUT
+	eventDetected : TasterEventType;
+END_VAR
+VAR	
+	ActualTasterEventState 	: TasterEventStates := TASTEVTST_Init;
+	internPosNegEdge		: BOOL  	:= FALSE;
+	internCountClick			: UINT  	:= 0;
+	testDoubleClickActive		: BOOL 	:= FALSE;
+	TimerLongClick			: TON;
+	TimerDoubleClick			: TON;
+	TimerPosNegClick		: TON;
+	currentSignalValue : BOOL := FALSE;
+	oldValueTimerNegEdge	: BOOL:= FALSE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Detect if the taster has been pressed more than longClickValueMs *)
+
+eventDetected	:= TASTEVT_NoOne;
+
+IF NOT actualValueTimerNegEdge AND oldValueTimerNegEdge THEN
+	eventDetected := TASTEVT_TimeElapsedAfterNegativeEdge;
+END_IF
+oldValueTimerNegEdge := actualValueTimerNegEdge;
+
+CASE ActualTasterEventState OF
+	TASTEVTST_Init:
+		(* Init timers *)
+		TimerLongClick(IN:=FALSE);
+		TimerDoubleClick(IN:=FALSE);
+		TimerPosNegClick(IN:=FALSE);
+		internPosNegEdge 	:= FALSE;
+		internCountClick		:= 0;
+		testDoubleClickActive	:= detectDoubleClick;
+
+		IF NOT currentSignalValue AND newSignalValue THEN
+			(* IF NOT detectDoubleClick AND NOT detectLongClick THEN *)
+			IF NOT detectDoubleClick THEN
+				eventDetected		:= TASTEVT_PositiveEdge;
+			END_IF
+
+			ActualTasterEventState	:=  TASTEVTST_FirstPosEdge;
+		END_IF
+
+		IF  currentSignalValue AND NOT newSignalValue THEN
+			eventDetected			:= TASTEVT_NegativeEdge;
+		END_IF
+
+	TASTEVTST_FirstPosEdge:
+			
+		(* Detect pos-neg event *)
+		IF detectPosNegClick THEN
+			TimerPosNegClick(IN:=TRUE, PT:=posNegClickTime);
+			IF NOT TimerPosNegClick.Q THEN	
+				IF NOT newSignalValue THEN
+					internPosNegEdge		:= TRUE;
+				END_IF					
+			END_IF
+		END_IF
+
+	
+		(* Detect long click *)
+		IF detectLongClick THEN
+			TimerLongClick(IN:=TRUE, PT:=longClickTime);
+			IF TimerLongClick.Q THEN
+				eventDetected			:= TASTEVT_LongClick;
+				TimerLongClick(IN:=FALSE, PT:=longClickTime);
+				ActualTasterEventState	:= TASTEVTST_FirstLongClick;
+			END_IF		
+		END_IF
+
+		(* Detect double click *)
+		IF detectDoubleClick THEN
+			TimerDoubleClick(IN:=TRUE, PT:=doubleClickTime);
+			IF NOT TimerDoubleClick.Q THEN
+				IF NOT newSignalValue AND internCountClick = 0 THEN
+					internCountClick			:= internCountClick + 1;
+				END_IF
+				IF  newSignalValue AND internCountClick = 1 THEN
+					eventDetected			:= TASTEVT_DoubleClick;
+				END_IF 
+			ELSE
+				testDoubleClickActive	:= FALSE;
+			END_IF	 
+		ELSE
+			IF internPosNegEdge THEN
+				eventDetected			:= TASTEVT_PositiveNegativeEdge;
+			END_IF
+		END_IF
+
+		IF NOT testDoubleClickActive THEN
+			IF NOT newSignalValue THEN
+				IF  detectLongClick THEN
+					IF NOT detectLongClick THEN
+						eventDetected		:=  TASTEVT_PositiveEdge;
+					END_IF
+				ELSE
+					eventDetected		:= TASTEVT_NegativeEdge;
+				END_IF
+				ActualTasterEventState	:= TASTEVTST_Init;
+			END_IF
+		END_IF
+
+	TASTEVTST_FirstLongClick:
+		eventDetected			:= TASTEVT_LongClick;
+		IF NOT newSignalValue THEN
+			eventDetected			:= TASTEVT_End_LongClick;
+			ActualTasterEventState	:= TASTEVTST_Init;
+		END_IF
+END_CASE
+
+currentSignalValue := newSignalValue;]]></ST>
+    </Implementation>
+    <LineIds Name="DetectEvent">
+      <LineId Id="36" Count="94" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

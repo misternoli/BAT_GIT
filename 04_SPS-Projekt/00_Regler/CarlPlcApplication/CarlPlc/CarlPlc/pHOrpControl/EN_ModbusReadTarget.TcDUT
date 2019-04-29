@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <DUT Name="EN_ModbusReadTarget" Id="{77699748-240f-4dd9-a92f-da4d3a0377ac}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE EN_ModbusReadTarget :
+(
+	READ_TARGET_PH 		:= 1,
+	READ_TARGET_PH_T,
+	READ_TARGET_ORP,
+	READ_TARGET_ORP_T
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

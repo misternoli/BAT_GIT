@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <GVL Name="GVL_FlowControl" Id="{29f441a2-2369-4f62-91ff-46ef1ea4b6a6}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	(* flow meter *)
+	flowRateRawCounts	AT %I*	: INT := 0;
+	flowRateCalibration			: LinearCalibration := (scaleFactor := 8.3415719228868017795353435491844E-5, offset := 0.3);
+	flowRateLitersPerMinute		: REAL := 0.0;
+
+	resetSpargeVolume			: BOOL := FALSE;
+	resetSpargeVolumeCumulative	: BOOL := FALSE;
+	
+END_VAR
+
+VAR_GLOBAL PERSISTENT
+	spargeVolume 				: REAL;
+	spargeVolumeCumulative		: REAL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

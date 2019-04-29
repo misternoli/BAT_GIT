@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <GVL Name="GVL_GasAnalysis" Id="{e1f978f9-0ec1-4642-9155-ea777c269781}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	ch4FlowSensor			AT %I*	: BOOL;
+	o2FlowSensor			AT %I*	: BOOL;
+	
+	ch4SensorRaw			AT %I*	: INT;
+	o2SensorRaw 			AT %I*	: INT;
+	
+	ch4ValuemA				: REAL := 0.0;
+	o2ValuemA				: REAL := 0.0;
+	
+	ch4ValuePercent			: REAL := 0.0;
+	o2ValuePercent			: REAL := 0.0;
+	
+	ch4CalibrationToPercent : LinearCalibration := (scaleFactor := 8.3415719228868017795353435491844E-5, offset := 0.3);
+	ch4CalibrationToMa		: LinearCalibration := (scaleFactor := 20.0/32768.0, offset := 0.0);
+	o2CalibrationToPercent	: LinearCalibration := (scaleFactor := 8.3415719228868017795353435491844E-5, offset := 0.3);
+	o2CalibrationToMa		: LinearCalibration := (scaleFactor := 20.0/32768.0, offset := 0.0);
+	
+	(* Sensor Status *)
+	ch4SensorStatus			: INT  := 0; 	(* 0: FAULT (1mA output), 1: BEAMBLOCK(2mA output), 2: STARTUP (3mA output), 3: Running (4 > 20 mA output) *)
+
+	o2SensorFault			: BOOL := FALSE;
+	
+	gasAnalysisControlStartStop : BOOL := FALSE;
+	gasAnalysisControlManual	: BOOL := FALSE;
+	
+	gasAnalysisValveAutomatic	: BOOL := FALSE;
+	gasAnalysisValveManual 		: BOOL := FALSE;	
+
+END_VAR
+
+
+VAR_GLOBAL PERSISTENT
+	ch4ValuePercentSet			: REAL := 0.0;
+	gasAnalysisControlRunning 	: BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

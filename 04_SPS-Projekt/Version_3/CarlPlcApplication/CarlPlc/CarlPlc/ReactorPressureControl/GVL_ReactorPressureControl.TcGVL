@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <GVL Name="GVL_ReactorPressureControl" Id="{797791a6-4dbb-4407-abaf-aaaa179a99be}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	
+	(* gas in-flow valve *)	
+	reactorPressureInletValve AT %Q*	: BOOL := FALSE;
+	
+	(* gas out-flow bypass valve *)
+	reactorPressureOutletValve		AT %Q* 	: BOOL := FALSE;
+
+	(* pressure sensor *)
+	pressureRawCounts	AT %I*	: INT := 0;
+	pressureSensorCalibration	: LinearCalibration := (scaleFactor := 2.1626297577854671280276816608997E-4, offset := -1.0);
+	pressureBar					: REAL := 0.0;
+	pressureStart				: BOOL := FALSE;
+	pressureStop				: BOOL := FALSE;
+
+END_VAR
+
+VAR_GLOBAL PERSISTENT
+	pressureSetBar				: REAL;
+	pressureRunning				: BOOL := FALSE;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

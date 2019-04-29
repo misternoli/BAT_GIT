@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="PRG_UpdateFlowRateSensor" Id="{98b19980-0f3a-4ba8-ae06-17189f6622e4}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_UpdateFlowRateSensor
+VAR
+	deltaVolume : REAL := 0.0;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF flowRateRawCounts < 20 THEN
+	flowRateLitersPerMinute := 0.0;
+ELSE
+	flowRateLitersPerMinute := INT_TO_REAL(flowRateRawCounts)*flowRateCalibration.scaleFactor + flowRateCalibration.offset;
+END_IF
+
+deltaVolume := flowRateLitersPerMinute*0.01/60.0;
+spargeVolume := spargeVolume + deltaVolume;
+spargeVolumeCumulative := spargeVolumeCumulative+ deltaVolume;
+
+IF  resetSpargeVolume THEN
+	resetSpargeVolume := FALSE;
+	spargeVolume := 0.0;
+END_IF
+
+IF resetSpargeVolumeCumulative THEN
+	resetSpargeVolumeCumulative := FALSE;
+	spargeVolumeCumulative := 0.0;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_UpdateFlowRateSensor">
+      <LineId Id="18" Count="1" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="48" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

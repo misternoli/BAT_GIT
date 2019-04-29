@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="TP_X_1" Id="{f8f98675-00f6-47e2-b7b2-5cd5077bd4e8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK TP_X_1
+VAR_INPUT
+	IN : BOOL;
+	PT : TIME;
+END_VAR
+VAR_OUTPUT
+	Q : BOOL;
+	ET : TIME;
+END_VAR
+VAR
+	edge : BOOL;
+	start : TIME;
+	tx: TIME;
+END_VAR
+
+(*retriggerable edge triggered pulse similar to TP but with a retrigger function
+if the pt input is 0 then output is always low.
+*)
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* read system_time *)
+tx := DWORD_TO_TIME(T_PLC_MS());
+
+(* rising edge trigger *)
+IF IN AND NOT edge THEN
+	start := tx;
+	Q := PT > t#0ms;
+ELSIF Q THEN
+	ET := tx - start;
+	IF ET >= PT THEN
+		Q := FALSE;
+		ET := t#0ms;
+	END_IF;
+END_IF;
+edge := IN;
+]]></ST>
+    </Implementation>
+    <LineIds Name="TP_X_1">
+      <LineId Id="24" Count="14" />
+      <LineId Id="53" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FB_PWM_1" Id="{b4123095-a844-4446-8e1e-c07c87a44182}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PWM_1
+VAR_INPUT
+	pwmCycleTime 		: TIME := T#10S;
+	pwmDutyCycle		: REAL := 0.5;
+	reset				: BOOL := FALSE;
+END_VAR
+VAR_OUTPUT
+	Q					: BOOL := FALSE;
+END_VAR
+VAR
+	pwmTimeInMs			: REAL	:= 0;
+	pwmTimer			: FB_TON;
+	dutyCycleInMs		: TIME;
+	test				: INT;
+	internalReset 		: BOOL := FALSE;
+	goHigh				: BOOL := FALSE;
+	
+	temp1				: REAL;
+	temp2				: DINT;
+	temp3				: REAL;
+	temp4				: REAL;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF pwmDutyCycle < 0 THEN
+	pwmDutyCycle := 0.0;
+END_IF
+
+IF reset OR internalReset THEN
+	pwmTimer(IN:= FALSE);
+	reset := FALSE;
+	internalReset := FALSE;
+	IF goHigh THEN
+		temp1 := (1.0-pwmDutyCycle);
+		temp2 := REAL_TO_DINT(pwmTimeInMs*(1.0-pwmDutyCycle));
+		dutyCycleInMs := DINT_TO_TIME(REAL_TO_DINT(pwmTimeInMs*(1.0-pwmDutyCycle)));
+		goHigh := FALSE;
+	ELSE
+		temp1 := (1.0-pwmDutyCycle);
+		temp2 := REAL_TO_DINT(pwmTimeInMs*(1.0-pwmDutyCycle));
+		dutyCycleInMs := DINT_TO_TIME(REAL_TO_DINT(pwmTimeInMs*pwmDutyCycle));
+	END_IF
+ELSE
+	pwmTimeInMs := DINT_TO_REAL(TIME_TO_DINT(pwmCycleTime));
+	IF Q THEN
+		(* high  --> running falling timer *)
+		(*dutyCycleInMs := DINT_TO_TIME(REAL_TO_DINT(pwmTimeInMs*pwmDutyCycle));*)
+		pwmTimer(IN:=TRUE, PT:=dutyCycleInMs);
+		IF pwmTimer.Q THEN
+			internalReset := TRUE;
+			Q := FALSE;
+			goHigh := TRUE;
+			pwmTimer(IN:=FALSE);
+		END_IF		
+	ELSE
+		(* low --> running rising timer *)
+		pwmTimer(IN:=TRUE, PT:=dutyCycleInMs);
+		IF pwmTimer.Q THEN
+			internalReset := TRUE;
+			Q := TRUE;
+			pwmTimer(IN:=FALSE);
+		END_IF		
+	END_IF
+END_IF
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_PWM_1">
+      <LineId Id="80" Count="2" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="130" Count="1" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="44" Count="3" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="41" Count="1" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="51" Count="2" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

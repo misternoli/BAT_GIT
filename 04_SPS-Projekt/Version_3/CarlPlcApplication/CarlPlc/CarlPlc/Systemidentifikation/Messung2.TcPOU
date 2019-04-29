@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="Messung2" Id="{2d1fa4e4-0ac4-4883-bc7d-53e75b4c3d17}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Messung2
+VAR
+	//PWM Settings
+	pwmPeriodinSec			: TIME 	:= T#25S;
+	pwmDutyCycle			: REAL 	:= 0.0;	
+	pwmOutputValveControl 	: FB_PWM;
+	status 					: INT 	:= 0; 			//Status 0 : Initial 
+													//Status 1 : Heating to Startpoint
+													//Status 2 : Heating while recording
+													//Status 3 : Cooling while recording
+													//STatus is set manuelly
+													
+END_VAR
+
+
+(*Temperature should be increased to a value in a first step. 
+This is to serve as a 0 point. should be around 70°C
+In the second step, the duty cycle is increased and the step response is recorded while the container is closed.
+Finally, the water is cooled with a DutyCycle of ... .
+*)
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* jacket temperature input *)
+jacketTempC := INT_TO_REAL(jacketTempRaw)/32768.0*200.0 -50.0;
+(* room temperature input *) //Is not in use in TemperaturControl
+roomTemp := (INT_TO_REAL(roomTempRaw)/32767.0)*100.0 - 40.0;  (* Sensor Range: -40°C to + 60°C *)
+
+
+// DutyCycle - To get a startingTemp.
+CASE status OF
+	
+	//------Initial - Status 0----------//
+	0:
+	(* Setting Valves & Pump off  *)
+	pumpOn := FALSE;
+	coldValve := FALSE;
+	hotValve := FALSE;
+	steriValve := FALSE;
+	
+	//------HEATING - Status 1----------//
+	1:
+	//Starting pump
+	pumpOn := TRUE;
+	
+	//DutyCyle for startpoint
+	pwmDutyCycle:= 40 ;
+	pwmOutputValveControl(pwmCycleTime:=pwmPeriodinSec, pwmDutyCycle:=pwmDutyCycle); //Gets the Output
+	hotValve := pwmOutputValveControl.Q;
+	
+	
+	//------HEATING - Status 2----------//
+	2:	
+	//Turning off the pump
+	pumpOn := FALSE;
+	
+	//DutyCycle for step response
+	pwmDutyCycle:= 80 ;
+	pwmOutputValveControl(pwmCycleTime:=pwmPeriodinSec, pwmDutyCycle:=pwmDutyCycle); //Gets the Output
+	steriValve := pwmOutputValveControl.Q;
+	
+	//------COOLING - Status 3----------//
+	3:
+	//Turning off hotValve & steriValve
+	hotValve := FALSE;
+	steriValve := FALSE;
+	
+	//DutyCycle for cooling
+	pwmDutyCycle:= 40 ;
+	pwmOutputValveControl(pwmCycleTime:=pwmPeriodinSec, pwmDutyCycle:=pwmDutyCycle); //Gets the Output
+	coldValve := pwmOutputValveControl.Q;
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="Messung2">
+      <LineId Id="74" Count="4" />
+      <LineId Id="80" Count="24" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="105" Count="8" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="114" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

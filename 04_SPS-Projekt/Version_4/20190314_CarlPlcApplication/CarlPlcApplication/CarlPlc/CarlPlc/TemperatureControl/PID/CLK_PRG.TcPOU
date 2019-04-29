@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="CLK_PRG" Id="{b2cbf47b-e118-40cc-8675-671015444be0}" SpecialFunc="None">
+    <Declaration><![CDATA[	FUNCTION_BLOCK CLK_PRG
+VAR_INPUT
+	PT : TIME := t#10ms;
+END_VAR
+VAR_OUTPUT
+	Q : BOOL;
+END_VAR
+VAR
+	init : BOOL;
+	last : TIME;
+	tx: TIME;
+END_VAR
+
+(*clk_prg uses the internal sps time to generate a clock with programmable period time.
+the period time is defined for 10ms .. 65s
+the first cycle after start is a clk pulse and then depending on the programmed period time a delay.
+every pulse is only valid for one cycle.
+the accuracy of clk_prg is depending on the accuracy of the system clock.*)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* read system time *)
+tx := DWORD_TO_TIME(T_PLC_MS());
+
+(* initialize on startup *)
+IF NOT init THEN
+	init := TRUE;
+	last := tx - pt;
+END_IF;
+
+(* generate output pulse when next_pulse is reached *)
+Q := tx - last >= pt;
+IF Q THEN last := tx; END_IF;]]></ST>
+    </Implementation>
+    <LineIds Name="CLK_PRG">
+      <LineId Id="25" Count="11" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

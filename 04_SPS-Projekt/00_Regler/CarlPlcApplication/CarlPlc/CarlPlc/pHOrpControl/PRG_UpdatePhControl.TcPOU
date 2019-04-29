@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="PRG_UpdatePhControl" Id="{f1fc1e97-b3b8-412a-b5d4-e5b43139c85c}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_UpdatePhControl
+VAR
+	evtPhControlStart		: DetectEvent;
+	evtPhControlStop		: DetectEvent;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[evtPhControlStart(newSignalValue := phStart);
+evtPhControlStop(newSignalValue := phStop);
+
+IF evtPhControlStart.eventDetected = TASTEVT_PositiveEdge THEN
+	phRunning := TRUE;
+END_IF
+
+IF evtPhControlStop.eventDetected = TASTEVT_PositiveEdge THEN
+	phRunning := FALSE;
+END_IF
+
+IF pressureBar < 0.5 AND pressureBar > 0 AND phPumpManual THEN
+	acidPumpSpeedCount := REAL_TO_INT(INT_TO_REAL(acidPumpSpeedSetting)*acidPumpSpeedCalibration.scaleFactor + acidPumpSpeedCalibration.offset);
+	phPumpRunning := TRUE;
+ELSE
+	acidPumpSpeedCount := 0;
+	phPumpRunning := FALSE;
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_UpdatePhControl">
+      <LineId Id="23" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="26" Count="5" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="PRG_UpdateMotor" Id="{07e9c43d-563b-405e-8f96-266c5264f4d5}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_UpdateMotor
+VAR
+	resetMotor			: RS;
+	
+	gearingFactor		: INT := 460;
+	gearingDivisor		: INT := 6;
+	
+	motorStartEvt		: DetectEvent;
+	motorStopEvt		: DetectEvent;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[resetMotor(	SET:= motorStartButton, RESET1 := motorStopButton, Q1 => motorStart);
+motorTargetSpeed := (currentMotorSpeedSetting * gearingFactor)/gearingDivisor;
+
+motorStartEvt(newSignalValue:= motorStartButton, detectLongClick := FALSE);
+motorStopEvt(newSignalValue:= motorStopButton, detectLongClick := FALSE);
+
+IF motorStartEvt.eventDetected = TASTEVT_PositiveEdge THEN
+	motorStartButton := FALSE;
+END_IF
+
+IF motorStopEvt.eventDetected = TASTEVT_PositiveEdge THEN
+	motorStopButton := FALSE;
+END_IF
+
+motorRpm := motorActualSpeed*gearingDivisor/gearingFactor;
+
+IF motorStart THEN
+	motorRunning := TRUE;
+ELSE
+	motorRunning := FALSE;
+END_IF
+
+(* TODO:
+	--> what should happen when "RESET FAILURE" Button is pressed? 
+*)]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_UpdateMotor">
+      <LineId Id="5" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="52" Count="1" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="58" Count="1" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="87" Count="2" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="21" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

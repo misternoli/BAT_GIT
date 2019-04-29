@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <DUT Name="TasterEventStates" Id="{29c8c00e-7e54-4c0a-847f-961a00be4730}">
+    <Declaration><![CDATA[TYPE TasterEventStates : (TASTEVTST_Init := 0,
+						TASTEVTST_FirstPosEdge,
+						TASTEVTST_FirstNegEdge,
+						TASTEVTST_FirstLongClick);
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

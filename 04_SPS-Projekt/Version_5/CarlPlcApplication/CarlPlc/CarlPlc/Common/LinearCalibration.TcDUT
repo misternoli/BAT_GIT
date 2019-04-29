@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <DUT Name="LinearCalibration" Id="{73915136-cbd1-459e-bbdc-d3e923596c97}">
+    <Declaration><![CDATA[TYPE LinearCalibration :
+STRUCT
+	offset		: REAL;
+	scaleFactor : REAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <GVL Name="GVL_PhOrpControl" Id="{406b6e7d-59d2-4329-be8c-7abd278bd63a}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	phCurrent					: REAL := 0.0;
+	phLastReadingValid			: BOOL := FALSE; 
+	orpCurrent					: REAL := 0.0;
+	orpLastReadingValid			: BOOL := FALSE;
+
+	(* acid pump *)
+	phStart						: BOOL := FALSE;
+	phStop						: BOOL := FALSE;
+	phPumpManual				: BOOL := FALSE;
+	acidPumpSpeedCount	AT %Q*	: INT := 0;
+	acidPumpSpeedCalibration	: LinearCalibration := (scaleFactor := 323.68, offset := 0.0);
+	acidPumpSpeedSetting		: INT := 100; (* in 0 - 100% *)
+
+END_VAR
+
+
+VAR_GLOBAL PERSISTENT
+	phRunning					: BOOL := FALSE;
+	phPumpRunning				: BOOL := FALSE;
+
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

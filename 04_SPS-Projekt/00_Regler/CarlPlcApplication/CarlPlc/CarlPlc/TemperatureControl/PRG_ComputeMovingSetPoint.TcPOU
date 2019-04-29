@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="PRG_ComputeMovingSetPoint" Id="{83a101db-fed2-42da-9701-7b259ab0243c}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_ComputeMovingSetPoint
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_ComputeMovingSetPoint">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

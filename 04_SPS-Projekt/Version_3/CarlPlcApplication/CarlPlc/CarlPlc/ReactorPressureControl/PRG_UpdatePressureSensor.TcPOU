@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="PRG_UpdatePressureSensor" Id="{627c2f6a-4707-48e2-9348-f660345fe98d}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_UpdatePressureSensor
+VAR
+	evtPressureControlStart		: DetectEvent;
+	evtPressureControlStop		: DetectEvent;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* convert the pressure signal *)
+pressureBar := INT_TO_REAL(pressureRawCounts)*pressureSensorCalibration.scaleFactor + pressureSensorCalibration.offset;
+
+
+(* button events *)
+evtPressureControlStart(newSignalValue := pressureStart);
+evtPressureControlStop(newSignalValue := pressureStop);
+
+IF evtPressureControlStart.eventDetected = TASTEVT_PositiveEdge THEN
+	pressureStart := FALSE;
+	pressureRunning := TRUE;
+END_IF
+
+IF evtPressureControlStop.eventDetected = TASTEVT_PositiveEdge THEN
+	pressureStop := FALSE;
+	pressureRunning := FALSE;
+END_IF
+
+
+(* controller *)
+IF pressureRunning THEN
+	IF pressureBar > pressureSetBar + 0.01  THEN
+		reactorPressureInletValve := FALSE;
+	END_IF
+	
+	IF pressureBar < pressureSetBar - 0.01 THEN
+		reactorPressureInletValve := TRUE;
+	END_IF
+ELSE
+	reactorPressureInletValve := FALSE;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_UpdatePressureSensor">
+      <LineId Id="55" Count="1" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="34" Count="4" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="42" Count="5" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="60" Count="1" />
+      <LineId Id="59" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

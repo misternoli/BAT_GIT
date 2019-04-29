@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <DUT Name="COMPLEX" Id="{4f0f083e-4b76-48ae-8330-2e3c1e8982d0}">
+    <Declaration><![CDATA[TYPE COMPLEX :
+STRUCT
+	re : REAL;
+	im : REAL;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

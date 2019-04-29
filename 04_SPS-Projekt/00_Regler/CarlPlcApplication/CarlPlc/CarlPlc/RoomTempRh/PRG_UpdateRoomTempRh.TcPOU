@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="PRG_UpdateRoomTempRh" Id="{eb6dbc51-372c-4e72-b511-be3cc0950038}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_UpdateRoomTempRh
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* currently on 0-20mA inputs, but delivering 4-20mA --> need remove 4mA from Signal *)
+
+roomTemp := (INT_TO_REAL(roomTempRaw)/32767.0)*100.0 - 40.0;  (* Sensor Range: -40°C to + 60°C *)
+roomRh :=   (INT_TO_REAL(roomRhRaw)/32767.0)*100.0; ]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_UpdateRoomTempRh">
+      <LineId Id="6" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="30" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

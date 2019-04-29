@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <GVL Name="GVL_Common" Id="{731533c4-299b-4a36-a2b7-df01d281b4a0}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	
+	loopCounter					: INT := 0;
+	
+		
+	(* pH, ORP, and integrated thermometers *)
+	PhModbus					: ModbusRtuMaster_KL6x22B;
+	OrpModbus 					: ModbusRtuMaster_KL6x22B;
+	PhValueArrayIn				: ARRAY [0..9]OF REAL;
+	TPhValueArrayIn				: ARRAY [0..9]OF REAL;
+	OrpValueArrayIn				: ARRAY [0..9] OF REAL;
+	TOrpValueArrayIn			: ARRAY [0..9] OF REAL;
+	
+	
+	
+	
+	
+	
+	
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

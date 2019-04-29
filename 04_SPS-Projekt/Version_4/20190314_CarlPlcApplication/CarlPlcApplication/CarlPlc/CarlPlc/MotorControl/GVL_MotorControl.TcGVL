@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <GVL Name="GVL_MotorControl" Id="{877c9547-339b-4119-9268-9a7bb341a9eb}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	(* agitation motor *)	
+	motorActualSpeed 	AT %I*	: INT;
+	motorTargetSpeed 	AT %Q*	: INT;
+	
+	motorRpm					: INT; 
+	
+	(* motor target speed setting --> see retains *)
+	motorStart			AT %Q*	: BOOL := FALSE;
+	motorReset			AT %Q*	: BOOL := FALSE;
+	
+	motorStartButton			: BOOL := FALSE;
+	motorStopButton				: BOOL := FALSE;
+	motorResetButton			: BOOL := FALSE;
+
+	(* motorIsRunning				: BOOL := FALSE; *)
+END_VAR
+
+VAR_GLOBAL PERSISTENT
+	motorRunning				: BOOL;
+	currentMotorSpeedSetting	: INT;
+END_VAR
+]]></Declaration>
+  </GVL>
+</TcPlcObject>

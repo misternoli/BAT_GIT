@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <GVL Name="GVL_GasSupply" Id="{2e6ba7ef-6b7c-4bfd-a7a6-530279f01099}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	gasSupplyValve		 AT %Q*	: BOOL := FALSE;
+	gasSupplyPressureRaw AT %I*	: INT := 0;
+
+	gasSupplyPressureSensorCalibration	: LinearCalibration := (scaleFactor := 2.1626297577854671280276816608997E-4, offset := -1.0);
+	gasSupplyPressureBar		: REAL := 0.0;
+	
+	gasSupplyStart				: BOOL := FALSE;
+	gasSupplyStop				: BOOL := FALSE;
+END_VAR
+
+
+VAR_GLOBAL PERSISTENT
+	gasSupplyPressureSetBar		: REAL;
+	gasSupplyRunning			: BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

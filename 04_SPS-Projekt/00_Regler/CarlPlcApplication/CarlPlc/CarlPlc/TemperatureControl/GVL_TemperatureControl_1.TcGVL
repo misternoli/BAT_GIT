@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <GVL Name="GVL_TemperatureControl_1" Id="{9ecd99b8-8efa-4378-99d1-e64294db85fe}">
+    <Declaration><![CDATA[VAR_GLOBAL
+
+
+	tPhCurrent					: REAL := 0.0;
+	tPhLastReadingValid			: BOOL := FALSE;
+	tOrpCurrent					: REAL := 0.0;
+	tOrpLastReadingValid		: BOOL := FALSE;
+
+
+	(* temperature control *)
+	pumpOn				AT %Q* 	: BOOL := FALSE;
+	coldValve			AT %Q* 	: BOOL := FALSE;
+	hotValve			AT %Q* 	: BOOL := FALSE;
+	steriValve			AT %Q*	: BOOL := FALSE; 
+	
+	jacketTempRaw		AT %I*	: INT;
+	jacketTempC					: REAL := 0.0;
+	jacketTempK					: REAL := 0.0;
+	
+	
+	tempControlStop				: BOOL := FALSE;
+	tempControlStart			: BOOL := FALSE;
+	hotValveButton				: BOOL := FALSE;
+	coldValveButton				: BOOL := FALSE;
+	
+	pumpIsRunning				: BOOL := FALSE;
+	tempControlRunning			: BOOL := FALSE;
+	tempSafetyEnabled			: BOOL := FALSE;
+	
+	steriStart					: BOOL := FALSE;
+	steriStop					: BOOL := FALSE;
+	steriRunning				: BOOL := FALSE;
+
+	
+	currentMeanTemp				: REAL := 0;
+	currentTempValid			: BOOL := FALSE;
+	(* target temp -> see retains *) 
+	
+	tempIsBelowSteriTemp		: BOOL := TRUE;
+	(* target steri temp --> see retains *)	
+
+	
+END_VAR
+
+VAR_GLOBAL PERSISTENT
+	targetControlTemp			: REAL;
+	targetSteriTemp				: REAL;
+	targetSteriTimeMinutes		: INT;
+	remainingSteriTimeMinutes	: REAL;
+	
+	
+	remainingSteriTimeInMs		: DINT; (* 30 min in ms *)
+	
+	countTempSpikes				: INT;
+	countValveMaxTimeExceeded	: INT;
+
+	pidResetCounter				: INT;
+END_VAR
+
+VAR_GLOBAL CONSTANT
+	CYCLE_TIME_IN_MS		: TIME := T#10ms;
+END_VAR
+]]></Declaration>
+  </GVL>
+</TcPlcObject>

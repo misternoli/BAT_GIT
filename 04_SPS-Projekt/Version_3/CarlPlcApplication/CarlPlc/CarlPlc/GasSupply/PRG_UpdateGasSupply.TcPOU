@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="PRG_UpdateGasSupply" Id="{2d8e01c2-0455-4c4f-acd8-286721cc7426}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_UpdateGasSupply
+VAR
+	evtGasSupplyStart		: DetectEvent;
+	evtGasSupplyStop		: DetectEvent;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[gasSupplyPressureBar := INT_TO_REAL(gasSupplyPressureRaw)*gasSupplyPressureSensorCalibration.scaleFactor + gasSupplyPressureSensorCalibration.offset;
+
+
+(* button events *)
+evtGasSupplyStart(newSignalValue := gasSupplyStart);
+evtGasSupplyStop(newSignalValue := gasSupplyStop);
+
+IF evtGasSupplyStart.eventDetected = TASTEVT_PositiveEdge THEN
+	gasSupplyStart := FALSE;
+	gasSupplyRunning := TRUE;
+END_IF
+
+IF evtGasSupplyStop.eventDetected = TASTEVT_PositiveEdge THEN
+	gasSupplyStop := FALSE;
+	gasSupplyRunning := FALSE;
+END_IF
+
+
+IF gasSupplyRunning THEN
+	IF gasSupplyPressureBar > gasSupplyPressureSetBar + 0.1 THEN
+		gasSupplyValve := FALSE;
+	END_IF
+	
+	IF gasSupplyPressureBar < gasSupplyPressureSetBar - 0.1 THEN
+		gasSupplyValve := TRUE;
+	END_IF
+ 
+END_IF
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_UpdateGasSupply">
+      <LineId Id="6" Count="0" />
+      <LineId Id="41" Count="1" />
+      <LineId Id="49" Count="12" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="30" Count="1" />
+      <LineId Id="33" Count="1" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="22" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+  <POU Name="T_PLC_MS" Id="{5d088b94-eb82-4b4a-8fbc-e4b45b33d3c3}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION T_PLC_MS : DWORD
+VAR CONSTANT
+	debug : BOOL := 0;
+	N : INT := 0;
+	offset : DWORD := 0;
+END_VAR
+VAR
+	tx : TIME;
+END_VAR
+
+(*T_PLC_MS reads the internal PLC timer and return the time, it has the advantage to be able to set a debug mode 
+and speed up the counter to test the plc timer overrun which occurs every 50 days respectively 25 days at siemens S7
+this routine also allows to correct the behavior of s7 where the internal plc counter will not count all 32 bits.
+
+*)]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[tx := TIME();
+T_PLC_MS := TIME_TO_DWORD(Tx);
+
+IF debug THEN
+	T_PLC_MS := (SHL(T_PLC_MS,N) OR SHL(DWORD#1,N)-1) + OFFSET;
+END_IF;
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="T_PLC_MS">
+      <LineId Id="20" Count="1" />
+      <LineId Id="29" Count="4" />
+      <LineId Id="43" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
