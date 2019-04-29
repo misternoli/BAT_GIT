@@ -2,10 +2,11 @@ K_Mantel=2408;
 T1_Mantel=12160;
 G_Mantel=tf([K_Mantel],[T1_Mantel 1]);
 
+
 %Diskretisieren
 G_Z_Mantel=c2d(G_Mantel,0.5);
 %%
-Kp_M=5;
+Kp_M=1;
 %%
 %Ziegler/Nichols
 Kp_M=(1/K_Mantel)*(T1_Mantel/Tu);
@@ -22,6 +23,9 @@ Ki_M=Kp_M/Tn_M;
 close all
 sim('Regler_Mantel');
 figure('Name','Temperaturverlauf Regelung');
+plot(T_M.time, T_M.signals.values,'r')
+legend('T_{Zelle}','Location','southeast') ;legend('boxoff')
+%%
 subplot(2,1,1);
 plot(T_M.time, T_M.signals.values,'r')
 ylabel('Temperature [°C]'); xlabel('Time [s]'); 
@@ -32,3 +36,4 @@ axis([0 1000 0 1])
 legend('Error','K','Location','northeast') ;legend('boxoff')
 %%
 plot(e.time, e.signals.values,'r')
+

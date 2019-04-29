@@ -3,30 +3,29 @@ clc;
 
 filename = 'Matlab_0_01_to_0_5.xlsx';
 sheet = 1;
-fileende=23140;
-Zeitende=fileende/2;
 xlRange = 'A:E';
 [num,txt,raw] = xlsread(filename,sheet,xlRange);
-t= num(1:fileende,1); u= num(1:fileende,4); T_Zelle=num(1:fileende,2); T_Mantel=num(1:fileende,3) ;T_Umgebung=num(1:fileende,5);
+t= num(1:end,1); u= num(1:end,4); T_Zelle=num(1:end,2); T_Mantel=num(1:end,3) ;T_Umgebung=num(1:end,5);
+dT= T_Zelle(end:end)-T_Zelle(1:1);
+fileende=size(t,1);
+Zeitende=fileende/2;
 %%
 %In einem Plot
-close all
 figure('Name','Zelle');
 subplot(2,1,1);
-plot(t,T_Zelle,'r',t,T_Mantel,'b'); ylabel('T_Zelle');
-ylabel('Temperature [°C]'); xlabel('Time [s]'); 
+plot(t,T_Mantel,'b',t,T_Zelle,'r');
 title('Temperaturverlauf - Sprung von 0.005 auf 0.01')
-legend('T_{Mantel}','T_{Zelle}','Location','southeast') ;legend('boxoff')
+legend('T_{Mantel}','T_{Zelle}','Location','best');
+F_Beschriftung;
 
 subplot(2,1,2);
 plot(t,T_Umgebung);
 title('Ambient Temperature ')
-legend('T_{Umgebung}','Location','southeast') ;legend('boxoff')
-
+legend('T_{Umgebung}','Location','best');
+F_Beschriftung;
 %%
 %Zwei Plots 
 %Temperaturverlauf Zelle
-close all
 figure('Name','Temperaturverlauf Zelle');
 plot(t,T_Zelle,'r'); ylabel('T_Zelle');
 x0=0;
@@ -43,30 +42,12 @@ ymin=T_Mantel(1:1);
 line([x0 Zeitende], [ymin ymin])
 
 %%
-%Paramentersierung via SystemIdentification
-%{
-T_Mantelmin=90;     %Startwert beliebig um T_min herauszufinden
-T_Zellemin=90;      %Startwert beliebig um T_min herauszufinden
-for x=1:fileende
-    if T_Mantelmin<T_Mantel(x:x)   
-    else
-        T_Mantelmin=T_Mantel(x:x);
-    end
-end
-T_Mantel0 = T_Mantel-T_Mantelmin;
-
-for x=1:fileende
-    if T_Zellemin<T_Zelle(x:x)   
-    else
-        T_Zellemin=T_Zelle(x:x);
-    end
-end
-T_Zelle0 = T_Zelle-T_Zellemin;
-%}
+%Nullpunkt als Startwert auslegen
 figure(5)
 T_Mantel0 = T_Mantel-T_Mantel(1:1);
 T_Zelle0 = T_Zelle-T_Zelle(1:1);
 plot(t,T_Mantel0,t,T_Zelle0)
+axis([0 12000 -60  0])
 %%
 %-------------------------------
 systemIdentification('Cooling_iden')
@@ -75,42 +56,26 @@ systemIdentification('Cooling_iden')
 Kp_Mantel=P2.KP;
 T1_Mantel=P2.Tp1;
 T2_Mantel=P2.Tp2;
-G_Mantel= tf([Kp_Mantel],[T2_Mantel T1_Mantel 1])
+G_Mantel= tf([Kp_Mantel],[T2_Mantel*T1_Mantel T2_Mantel+T1_Mantel 1])
+%%
 %Bioreaktorparameter einzeln betrachtet
-Kp_Reaktor =  P2D.Kp;
-T1_Reaktor =  P2D.Tp1;
-T2_Reaktor =  P2D.Tp2;
-Tt_Reaktor =  P2D.Td;
-G_Reaktor  =  tf([Kp_Reaktor],[T2_Reaktor T1_Reaktor 1]) %Totzeit in der Simu nicht vergessen
-
+Kp_Reaktor =  P3.Kp;
+T1_Reaktor =  P3.Tp1;
+T2_Reaktor =  P3.Tp2;
+T3_Reaktor =  P3.Tp3;
+G_Reaktor  =  tf([Kp_Reaktor],[T2_Reaktor*T1_Reaktor T1_Reaktor+T2_Reaktor 1])*tf([1],[T3_Reaktor 1])
+%Zelle
+Kp_Zelle = Kp_Reaktor/Kp_Mantel;
+T1_Zelle = T3_Reaktor;
+G_Zelle = tf([Kp_Zelle],[T1_Zelle 1])
 %%
-%----- Dadurch Mantel schon PT2 Glied ist, funktioniert dieser Ansatz nicht mehr --------
-%{
-%----Zwei PT2 Glieder----
-Kp_Mantel = P1.KP;
-Kp_Zelle  = P2D.Kp/P1.Kp;
-Kp_Total  = Kp_Mantel*Kp_Zelle ;
-
-T1_Mantel  =P2D.Tp1;
-
-T2_Zelle   =P2D.Tp2;
-Tt_Zelle   =P2D.Td;
-   
-G_Mantel = tf([Kp_Mantel],[T1_Mantel 1])
-G_Zelle  = tf([Kp_Zelle],[T2_Zelle 1])
-
-%%
-%----------------------------------------
-%Simulation mit 2 PT1 Glieder
-%}
-G_Try=G_Reaktor/G_Mantel
 G_Z_Mantel=c2d(G_Mantel,0.5)
-G_Z_Zelle=c2d(G_Try,0.5)
-
-sim('ColdPT1_Glieder');
+G_Z_Zelle=c2d(G_Zelle,0.5)
+%%
+sim('Cold_Mantel');
 figure('Name','Zelle');
-plot(T_M.time, T_M.signals.values,'b', T_Z.time, T_Z.signals.values, 'r')
-
+plot(T_M.time, T_M.signals.values,'b')
+%%
 %Differenz von Simulation und Real
 T_dZelle=[23140:1];
 T_dMantel=[23140:1];
@@ -137,3 +102,12 @@ for x=1:fileende
 end
 figure('Name','Differenz T_Real zu T_Simulation');
 plot(t,T_Diff)
+
+
+%%
+function F_Beschriftung
+y=ylabel('Temperatur [°C]');y.FontSize=12;
+x=xlabel('Zeit [s]'); x.FontSize=12;
+lgd=legend('boxoff')
+lgd.FontSize = 12;
+end
