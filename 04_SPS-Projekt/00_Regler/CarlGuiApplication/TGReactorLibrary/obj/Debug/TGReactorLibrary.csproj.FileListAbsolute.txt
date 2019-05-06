@@ -5,3 +5,10 @@ D:\twentygreen\40_Software\CarlGuiApplication\TGReactorLibrary\bin\Debug\TwinCAT
 D:\twentygreen\40_Software\CarlGuiApplication\TGReactorLibrary\bin\Debug\log4net.xml
 D:\twentygreen\40_Software\CarlGuiApplication\TGReactorLibrary\obj\Debug\TGReactorLibrary.dll
 D:\twentygreen\40_Software\CarlGuiApplication\TGReactorLibrary\obj\Debug\TGReactorLibrary.pdb
+C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\TGReactorLibrary\bin\Debug\TGReactorLibrary.dll
+C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\TGReactorLibrary\bin\Debug\TGReactorLibrary.pdb
+C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\TGReactorLibrary\bin\Debug\log4net.dll
+C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\TGReactorLibrary\bin\Debug\log4net.xml
+C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\TGReactorLibrary\obj\Debug\TGReactorLibrary.csprojResolveAssemblyReference.cache
+C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\TGReactorLibrary\obj\Debug\TGReactorLibrary.dll
+C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\TGReactorLibrary\obj\Debug\TGReactorLibrary.pdb

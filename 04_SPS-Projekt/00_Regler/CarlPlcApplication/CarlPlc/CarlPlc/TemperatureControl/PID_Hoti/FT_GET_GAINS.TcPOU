@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FT_GET_GAINS" Id="{97d12702-10aa-446e-874f-85a6284c0a79}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FT_GET_GAINS
+VAR_INPUT
+	TEMP 	: REAL;
+	MODE	: BOOL;		// COOLING =0 ; HEATING = 1
+END_VAR
+VAR_OUTPUT
+	//Jacket
+	K_P_J 	: REAL;
+	K_I_J	: REAL; 
+	// Cell
+	K_P_C 	: REAL ;		
+	K_I_C 	: REAL ;
+	K_D_C 	: REAL ;
+	//Tracking time 
+	T_R_C	: REAL ; 			
+	T_R_J	: REAL ; 			
+END_VAR
+VAR
+	TempCase : INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF MODE= TRUE THEN			//HEATING
+	IF TEMP < 40 THEN
+		TempCase := 1 ;		// 37°C 
+	ELSIF TEMP <71 THEN
+		TempCase := 2 ;		// up to 71°C 
+	ELSIF TEMP <81 THEN
+		TempCase := 3 ;		// up to 81°C 
+	ELSIF TEMP <91 THEN				
+		TempCase := 4 ;		// up to 91°C 
+	ELSIF TEMP >115 THEN
+		TempCase := 5 ;		// for 121°C
+	ELSE
+		TempCase := 4 ;		// if over 90°C and below 115 it will handle like 90°C 
+	END_IF
+ELSE
+		TempCase := 0;
+END_IF 
+
+CASE TempCase  OF
+0:	//COOLING --- till 40°C
+	K_P_J := 1;
+	K_I_J := 1;
+	T_R_J := 1;
+	
+	K_P_C := 1;
+	K_I_C := 1;
+	K_D_C := 1;	
+	T_R_C := 1;	
+1:  // HEATING ---for 37°C 
+	K_P_J := 1;
+	K_I_J := 1;
+	T_R_J := 1;
+	
+	K_P_C := 1;
+	K_I_C := 1;
+	K_D_C := 1;	
+	T_R_C := 1;		
+2:	// HEATING ---for 71°C 
+	K_P_J := 10;
+	K_I_J := 1;
+	T_R_J := 1;
+	K_P_C := 182.5;
+	K_I_C := 0.162;
+	K_D_C := 385.9;	
+	T_R_C := 48.77;
+3:	// HEATING ---for 81°C 
+	K_P_J := 1;
+	K_I_J := 1;
+	T_R_J := 1;
+	
+	K_P_C := 1;
+	K_I_C := 1;
+	K_D_C := 1;	
+	T_R_C := 1;	
+4:	// HEATING --- for 91°C 
+	K_P_J := 1;
+	K_I_J := 1;
+	T_R_J := 1;
+	
+	K_P_C := 1;
+	K_I_C := 1;
+	K_D_C := 1;	
+	T_R_C := 1;	
+5:	// STERIL --- for 121°C 
+	K_P_J := 1;
+	K_I_J := 1;
+	T_R_J := 1;
+	
+	K_P_C := 1;
+	K_I_C := 1;
+	K_D_C := 1;	
+	T_R_C := 1;	
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FT_GET_GAINS">
+      <LineId Id="39" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="30" Count="1" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="80" Count="1" />
+      <LineId Id="85" Count="1" />
+      <LineId Id="82" Count="1" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="87" Count="6" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="62" Count="1" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="64" Count="1" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="94" Count="6" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="101" Count="6" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="116" Count="7" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="25" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

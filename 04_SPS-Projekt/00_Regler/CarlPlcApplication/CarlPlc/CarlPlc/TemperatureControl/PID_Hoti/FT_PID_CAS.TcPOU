@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FT_PID_CAS" Id="{dd61eae7-1da3-4937-aea1-85cf2bd67c0e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FT_PID_CAS
+VAR_INPUT
+	T_ERR_C	: REAL;					//Error
+	//Jacket
+	K_P_J 	: REAL := 1.0; 
+	K_I_J	: REAL := 1.0;	
+	// Cell
+	K_P_C 	: REAL := 1.0;		
+	K_I_C 	: REAL := 1.0;
+	K_D_C 	: REAL := 1.0;
+	T_R_C	: REAL := 1.0; 			//Tracking time used for Anti-Wind up
+	T_R_J	: REAL := 1.0; 			//Tracking time used for Anti-Wind up
+	LIM_L 	: REAL := -1.0E38;		//Min. Temp for Jacket
+	LIM_H 	: REAL := 1.0E38;		//Max. Temp for Jacket
+	RST 	: BOOL;
+END_VAR
+VAR_OUTPUT
+	Y 		: REAL;
+	LIM 	: BOOL;
+END_VAR
+VAR
+	//For Cell
+	P_C 	: REAL;			//Proportional term
+	I_C 	: REAL;			//Integral term
+	D_C 	: REAL;			//Derivate term
+	err_sum : REAL :=0;		//error for I
+	err_k_1 : REAL :=0;		//old error
+	
+	//for the jacket
+	P_J 	: REAL :=1.0;
+	
+	//Control for Jacket
+	P_J_Controll : FT_P_J ;
+	
+	//Saturation
+	y_k		: REAL;			//control signal 
+	y_sat   : REAL;			//Control signal after saturation
+	y_k_1 	: REAL;			//Control signal (k-1)
+	y_sat_k_1 :REAL;		//control signal after saturation (k-1)
+	
+	I_C_k_1	: REAL ; 		//I-Part old
+	
+	T_ERR_J : REAL ;			
+	
+	tx		: DWORD;
+	T_a		: REAL;			//Sampling Time
+	t_last	: DWORD;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* if rst then *)
+IF rst THEN		//Reset -- tbd
+	err_sum:=0;
+	err_k_1:=0;
+	t_last := T_PLC_US();
+	T_a := 0.0;
+ELSE
+	//read last cycle time in Microseconds
+	tx := T_PLC_US();
+	T_a := DWORD_TO_REAL(tx - t_last);
+	t_last := tx;
+
+	//proportional term
+	P_C := K_P_C*T_ERR_C;
+	
+	//Integrator term with Anti-Windup backcalculation
+	err_sum:=err_k_1+T_ERR_C;
+	I_C := I_C_k_1 + K_I_C * err_sum * T_a/2.0 + (T_a/T_R_C)*(y_k-y_sat+y_k_1-y_sat_k_1);
+	
+	//Derivative term
+	D_C := K_D_C * (T_ERR_C-err_k_1)/T_a;
+	
+	//output before saturation
+	y_k := P_C + I_C + D_C;
+	
+	//Saturation used to limit Jacket temp.
+	IF LIM_H < y_k THEN
+		y_sat:= LIM_H;
+	ELSIF  LIM_L > y_k THEN
+		y_sat:= LIM_L;
+	ELSE
+		y_sat:= y_k;
+	END_IF	
+	
+	//setting output
+	Y	:= y_sat;	
+	
+	//Jacket ERROR
+	T_ERR_J := jacketTempC - Y;
+	
+	//Jacket Controll
+	P_J_Controll (	T_ERR_J := T_ERR_J, 
+					K_P_J := K_P_J,
+					K_I_J := K_I_J,
+					T_R_J := T_R_J,
+					RST := RST,
+					);
+					
+	//save variable for next step
+	I_C_k_1 := I_C;			//Saving Integral part for next step
+	err_k_1 := T_ERR_C;			//Saving error for ...
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FT_PID_CAS">
+      <LineId Id="20" Count="1" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="47" Count="3" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="79" Count="1" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="84" Count="1" />
+      <LineId Id="63" Count="1" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="93" Count="1" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="121" Count="4" />
+      <LineId Id="99" Count="1" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="25" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

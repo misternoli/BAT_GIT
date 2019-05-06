@@ -1,0 +1,463 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="PRG_Hoti_TemperatureControl" Id="{bda1fa6f-ddc5-471e-a247-4df659a0e1df}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_Hoti_TemperatureControl
+VAR
+	tempControlMode				: EN_TempControlMode := EN_TempControlMode.TEMP_MODE_MANUAL;  
+	
+	loopCounter					: DINT := 0;
+
+	(* Controller settings *)
+	pwmPeriodinSec			: TIME := T#25S;
+	pwmDutyCycle			: REAL := 0.0;	
+	pwmOutputValveControl 	: FB_PWM;
+	
+	//Controling Temperatur for 20°C to 90°C
+	CAS_Controller			: FT_PID_CAS;
+	
+	//Controling Temperatur above 90°C
+	STERI_Controller		: FT_PID_STERI;
+	
+	//GET_GAINS
+	GET_GAINS				: FT_GET_GAINS;
+	//GAINS JACKET
+	kp_J					: REAL := kp_heating;
+	ki_J					: REAL := tn_heating;
+	//GAINS CELL
+	kp_C					: REAL := kp_heating;
+	ki_C					: REAL := tn_heating;
+	kd_C					: REAL := tv_heating;
+	
+	//Traking time - anti-windup 
+	tr_J					: REAL := 1.0;
+	tr_C					: REAL := 1.0;
+	//is used for changing the status from heating <-> cooling 
+	TargetTemp_old 			: REAL ;
+	
+	// Cooling or Heating for MODE_HEATCOOL;
+	COOLING 				: BOOL ;
+	HEATING					: BOOL ;
+		
+	errorTemp				: REAL := 0.0;
+	pidReset				: BOOL := FALSE;
+		
+	evtSteriStart			: DetectEvent;
+	evtSteriStop			: DetectEvent;
+		
+	evtTempControlStart		: DetectEvent;
+	evtTempControlStop		: DetectEvent;
+	
+	windUpResetTimer		: TON;
+	windUpResetTime			: TIME := T#30S;
+	
+	maxValveOnTimer		 	: TON;
+	maxValveOnTime			: TIME := T#25S;	
+	
+	evtPidReset				: DetectEvent;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* jacket temperature input *)
+jacketTempC := INT_TO_REAL(jacketTempRaw)/32768.0*200.0 -50.0;
+jacketTempK := jacketTempC + 273.15;
+tOrpCurrent;
+tPhCurrent;
+currentMeanTemp;
+
+
+evtSteriStart(		newSignalValue := steriStart);
+evtSteriStop(		newSignalValue := steriStop);
+evtTempControlStart(newSignalValue := tempControlStart);
+evtTempControlStop(	newSignalValue := tempControlStop);
+evtPidReset( 		newSignalValue := pidReset);
+
+
+IF evtSteriStart.eventDetected = TASTEVT_PositiveEdge THEN
+	steriStart := FALSE;
+	pumpOn := FALSE;
+	CAS_Controller( RST:= TRUE );
+	STERI_Controller(RST:=TRUE);
+	tempControlMode	:= EN_TempControlMode.TEMP_MODE_STERI;
+	tempControlRunning := FALSE;
+	steriRunning := TRUE;
+	steriValve := FALSE;
+	coldValve := FALSE;
+	hotValve := FALSE;
+	(* Set remaining steri temp *)
+	remainingSteriTimeInMs := targetSteriTimeMinutes*60*1000; 
+END_IF
+
+IF evtTempControlStart.eventDetected = TASTEVT_PositiveEdge THEN
+	tempControlStart := FALSE;
+	pumpOn := FALSE;
+	CAS_Controller( RST:= TRUE );
+	STERI_Controller(RST:=TRUE);
+	tempControlMode	:= EN_TempControlMode.TEMP_MODE_HEATCOOL;
+	tempControlRunning := TRUE;
+	steriRunning := FALSE;
+	steriValve := FALSE;
+	coldValve := FALSE;
+	hotValve := FALSE;
+END_IF
+
+IF 	evtSteriStop.eventDetected = TASTEVT_PositiveEdge OR
+ 	evtTempControlStop.eventDetected = TASTEVT_PositiveEdge 
+THEN
+	steriStop := FALSE;
+	tempControlStop := FALSE;
+	pumpOn := FALSE;
+	CAS_Controller( RST:= TRUE );
+	STERI_Controller(RST:=TRUE);
+	tempControlRunning := FALSE;
+	steriRunning := FALSE;
+	tempControlMode	:= EN_TempControlMode.TEMP_MODE_MANUAL;
+	coldValve := FALSE;
+	hotValve := FALSE;
+	steriValve := FALSE;
+	(* TODO: Reset Steri Timer *)
+END_IF
+
+(* check if current temperature reading actually valid, otherwise stop any type of temperature control *)
+
+IF NOT currentTempValid THEN
+	tempControlMode := EN_TempControlMode.TEMP_MODE_MANUAL;
+END_IF
+
+
+CASE tempControlMode OF
+	EN_TempControlMode.TEMP_MODE_MANUAL:
+		pumpOn := FALSE;
+		CAS_Controller( RST:= TRUE );
+		coldValve := FALSE;
+		hotValve := FALSE;
+		steriValve := FALSE;
+		
+		
+	EN_TempControlMode.TEMP_MODE_HEATCOOL:
+		
+		pumpOn := TRUE;
+		(* errorTemp := targetControlTemp - currentMeanTemp; *)
+		errorTemp := FUN_ComputeMovingSetPoint(currentTemp := currentMeanTemp, targetSetPoint := targetControlTemp) - currentMeanTemp;
+		
+		//Setting Heating or Cooling only when TargetTemp is changed
+		IF TargetTemp_old = targetControlTemp THEN
+			;
+			ELSE
+			IF (TargetTemp_old > targetControlTemp) AND (targetControlTemp <40) THEN
+				COOLING := TRUE;
+				HEATING := FALSE;
+				GET_GAINS( 	TEMP := targetControlTemp,
+							MODE := 0,);
+				kp_J := GET_GAINS.K_P_J;
+				ki_J := GET_GAINS.K_I_J;
+				tr_J := GET_GAINS.T_R_J;
+ 				kp_C := GET_GAINS.K_P_C;
+				ki_C := GET_GAINS.K_I_C;
+				kd_C := GET_GAINS.K_D_C;
+				tr_C := GET_GAINS.T_R_C;
+			ELSE
+				COOLING := FALSE;
+				HEATING := TRUE;	
+				GET_GAINS( 	TEMP := targetControlTemp,
+							MODE := 1,);
+				kp_J := GET_GAINS.K_P_J;
+				ki_J := GET_GAINS.K_I_J;
+				tr_J := GET_GAINS.T_R_J;
+ 				kp_C := GET_GAINS.K_P_C;
+				ki_C := GET_GAINS.K_I_C;
+				kd_C := GET_GAINS.K_D_C;
+				tr_C := GET_GAINS.T_R_C;
+			END_IF
+		END_IF
+		//Save old TargetTemp
+		TargetTemp_old := TargetControlTemp;	 
+		//Start Temp. Controller
+		CAS_Controller(	T_ERR_C := errorTemp,		//Cell Temperatur error 
+						K_P_J 	:= kp_J,
+						K_I_J 	:= ki_J,
+						T_R_J 	:= tr_J,
+						K_P_C 	:= kp_C,	
+						K_I_C 	:= ki_C,
+						K_D_C 	:= kd_C,			
+						T_R_C	:= tr_C, 			//Tracking time used for Anti-Wind up
+						T_R_J	:= tr_J,			//Tracking time used for Anti-Wind up
+						LIM_L 	:= 0.0,				//Min. Temp for Jacket
+						LIM_H 	:= 90.0,			//Max. Temp for Jacket
+						RST 	:= pidReset,
+						);
+												
+		pwmDutyCycle := CAS_Controller.P_J_Controll.Y; (* !! pwm block cannot handle negative inputs *)
+		//pwmDutyCycle := 1;
+
+		pwmOutputValveControl(pwmCycleTime:=pwmPeriodinSec, pwmDutyCycle:=pwmDutyCycle);	
+						
+		IF  HEATING = TRUE THEN			 	//heating 
+			coldValve := FALSE;
+			hotValve := pwmOutputValveControl.Q;
+			steriValve := FALSE;
+
+			kp_C := kp_heating;
+			kd_C := tv_heating;
+			ki_C := tn_heating;
+			
+		ELSIF COOLING = TRUE THEN			//cooling 
+			coldValve := pwmOutputValveControl.Q;
+			hotValve := FALSE;
+			steriValve := FALSE;
+
+			kp_C := kp_cooling;
+			kd_C := tv_cooling;
+			ki_C := tn_cooling;
+			
+		ELSE								//ERROR STATE?
+			coldValve := FALSE;
+			hotValve := FALSE;
+			steriValve := FALSE;
+		END_IF
+		
+//----------------------------------------------STERIL-------------------------------------------------------------------			
+	EN_TempControlMode.TEMP_MODE_STERI:
+		pumpOn := FALSE;
+		errorTemp := targetSteriTemp - currentMeanTemp;
+		
+				//Setting Heating or Cooling only when TargetTemp is changed
+		IF TargetTemp_old = targetControlTemp THEN
+			;
+			ELSE
+			IF (TargetTemp_old > targetControlTemp) THEN
+				COOLING := FALSE;
+				HEATING := FALSE;
+
+			ELSE
+				COOLING := FALSE;
+				HEATING := TRUE;	
+				GET_GAINS( 	TEMP := targetControlTemp,
+							MODE := 0,);
+				kp_C := GET_GAINS.K_P_C;
+				ki_C := GET_GAINS.K_I_C;
+				kd_C := GET_GAINS.K_D_C;
+				tr_C := GET_GAINS.T_R_C;
+			END_IF
+		END_IF
+		//Save old TargetTemp
+		TargetTemp_old := TargetControlTemp;	
+		//Start Temp. Controller
+		STERI_Controller(	
+						T_ERR_C := errorTemp,		//Cell Temperatur error 
+						K_P_C 	:= kp_C,	
+						K_I_C 	:= ki_C,
+						K_D_C 	:= kd_C,			
+						T_R_C	:= tr_C, 			//Tracking time used for Anti-Wind up
+						LIM_L 	:= 0.0,				//Min. Temp for Jacket
+						LIM_H 	:= 1.0,				//Max. Temp for Jacket
+						RST 	:= pidReset,
+						);
+						
+		pwmDutyCycle := STERI_Controller.Y; 	
+		//pwmDutyCycle := 0.5;
+		
+		pwmOutputValveControl(pwmCycleTime:=pwmPeriodinSec, pwmDutyCycle:=pwmDutyCycle);
+				
+		IF HEATING = TRUE THEN
+			(* heating *)
+			coldValve 	:= FALSE;
+			steriValve 	:= pwmOutputValveControl.Q;
+			hotValve 	:= FALSE;
+			
+		ELSE
+			(* cooling *)
+			steriValve 	:= FALSE;
+			hotValve 	:= FALSE;			
+		END_IF
+		
+		IF currentMeanTemp > (targetSteriTemp-0.5) THEN
+			(* count down 10 ms each cycle *)
+			remainingSteriTimeInMs := remainingSteriTimeInMs - 10;
+			IF remainingSteriTimeInMs < 0 THEN
+				tempControlMode := EN_TempControlMode.TEMP_MODE_MANUAL;
+				steriValve := FALSE;
+				coldValve := FALSE;
+				steriStop := TRUE;
+			END_IF
+		END_IF		
+		remainingSteriTimeMinutes := DINT_TO_REAL(remainingSteriTimeInMs)/(60.0*1000.0);
+	
+	
+END_CASE
+ 
+IF evtPidReset.eventDetected = TASTEVT_PositiveEdge THEN
+	pidReset := FALSE;
+	CAS_Controller(RST:=TRUE);
+	STERI_Controller(RST:=TRUE);
+	pidResetCounter := pidResetCounter + 1;
+	steriValve := FALSE;
+	coldValve := FALSE;
+	hotValve := FALSE;
+END_IF
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_Hoti_TemperatureControl">
+      <LineId Id="751" Count="0" />
+      <LineId Id="754" Count="0" />
+      <LineId Id="752" Count="1" />
+      <LineId Id="1004" Count="0" />
+      <LineId Id="1003" Count="0" />
+      <LineId Id="1002" Count="0" />
+      <LineId Id="147" Count="0" />
+      <LineId Id="210" Count="0" />
+      <LineId Id="217" Count="0" />
+      <LineId Id="211" Count="1" />
+      <LineId Id="317" Count="0" />
+      <LineId Id="436" Count="0" />
+      <LineId Id="221" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="224" Count="1" />
+      <LineId Id="1184" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="256" Count="1" />
+      <LineId Id="520" Count="1" />
+      <LineId Id="519" Count="0" />
+      <LineId Id="511" Count="0" />
+      <LineId Id="586" Count="0" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="248" Count="1" />
+      <LineId Id="1183" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="252" Count="1" />
+      <LineId Id="516" Count="2" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="227" Count="1" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="244" Count="0" />
+      <LineId Id="260" Count="1" />
+      <LineId Id="229" Count="1" />
+      <LineId Id="1182" Count="0" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="254" Count="0" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="512" Count="2" />
+      <LineId Id="234" Count="0" />
+      <LineId Id="232" Count="0" />
+      <LineId Id="874" Count="1" />
+      <LineId Id="877" Count="0" />
+      <LineId Id="876" Count="0" />
+      <LineId Id="878" Count="1" />
+      <LineId Id="873" Count="0" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="881" Count="2" />
+      <LineId Id="880" Count="0" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="696" Count="0" />
+      <LineId Id="176" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="698" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="1106" Count="0" />
+      <LineId Id="1084" Count="0" />
+      <LineId Id="1086" Count="2" />
+      <LineId Id="1090" Count="0" />
+      <LineId Id="1100" Count="0" />
+      <LineId Id="1151" Count="2" />
+      <LineId Id="1159" Count="0" />
+      <LineId Id="1161" Count="0" />
+      <LineId Id="1154" Count="0" />
+      <LineId Id="1156" Count="1" />
+      <LineId Id="1160" Count="0" />
+      <LineId Id="1098" Count="0" />
+      <LineId Id="1102" Count="0" />
+      <LineId Id="1099" Count="0" />
+      <LineId Id="1163" Count="7" />
+      <LineId Id="1162" Count="0" />
+      <LineId Id="1091" Count="0" />
+      <LineId Id="1089" Count="0" />
+      <LineId Id="1105" Count="0" />
+      <LineId Id="1104" Count="0" />
+      <LineId Id="1103" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="1057" Count="2" />
+      <LineId Id="1072" Count="0" />
+      <LineId Id="1066" Count="5" />
+      <LineId Id="1064" Count="0" />
+      <LineId Id="1082" Count="0" />
+      <LineId Id="1062" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="808" Count="1" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="1108" Count="0" />
+      <LineId Id="108" Count="1" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="884" Count="0" />
+      <LineId Id="886" Count="0" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="198" Count="1" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="887" Count="0" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="200" Count="2" />
+      <LineId Id="1113" Count="0" />
+      <LineId Id="1109" Count="0" />
+      <LineId Id="1112" Count="0" />
+      <LineId Id="1110" Count="1" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="1360" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="178" Count="0" />
+      <LineId Id="435" Count="0" />
+      <LineId Id="1185" Count="0" />
+      <LineId Id="1329" Count="6" />
+      <LineId Id="1344" Count="3" />
+      <LineId Id="1361" Count="4" />
+      <LineId Id="1356" Count="3" />
+      <LineId Id="1328" Count="0" />
+      <LineId Id="1186" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="1123" Count="1" />
+      <LineId Id="1128" Count="3" />
+      <LineId Id="1133" Count="1" />
+      <LineId Id="1122" Count="0" />
+      <LineId Id="132" Count="1" />
+      <LineId Id="1145" Count="0" />
+      <LineId Id="429" Count="0" />
+      <LineId Id="431" Count="0" />
+      <LineId Id="430" Count="0" />
+      <LineId Id="136" Count="3" />
+      <LineId Id="889" Count="0" />
+      <LineId Id="888" Count="0" />
+      <LineId Id="140" Count="1" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="892" Count="0" />
+      <LineId Id="144" Count="0" />
+      <LineId Id="501" Count="0" />
+      <LineId Id="503" Count="4" />
+      <LineId Id="509" Count="1" />
+      <LineId Id="515" Count="0" />
+      <LineId Id="508" Count="0" />
+      <LineId Id="502" Count="0" />
+      <LineId Id="588" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="368" Count="3" />
+      <LineId Id="1181" Count="0" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="523" Count="2" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="427" Count="0" />
+      <LineId Id="437" Count="0" />
+      <LineId Id="439" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

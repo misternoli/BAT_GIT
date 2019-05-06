@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
+  <POU Name="FT_P_J" Id="{ede81184-2328-48fe-80e7-c4e0858f9d73}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FT_P_J
+VAR_INPUT
+	T_ERR_J	: REAL;					//Error
+	K_P_J	: REAL;
+	K_I_J	: REAL;
+	T_R_J	: REAL; 				//Tracking time used for Anti-Wind up
+	RST 	: BOOL;
+END_VAR
+VAR_OUTPUT
+	Y 		: REAL;
+END_VAR
+VAR
+	P_J 	: REAL;	
+	I_J		: REAL;
+	err_sum	: REAL;
+	err_k_1 : REAL;
+	I_J_k_1 : REAL;
+	
+	//Max min PWM 0..1;
+	LIM_L 	: REAL :=0.0;	
+	LIM_H	: REAL :=1.0;
+	
+	//Saturation
+	y_k		: REAL;			//control signal 
+	y_sat   : REAL;			//Control signal after saturation
+	y_k_1 	: REAL;			//Control signal (k-1)
+	y_sat_k_1 :REAL;		//control signal after saturation (k-1)
+	
+	I_C_k_1 : REAL;			//I-Part old
+	
+	tx		: DWORD;
+	T_a		: REAL;			//Sampling Time
+	t_last	: DWORD;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF rst THEN		//Reset -- tbd
+	err_sum:=0;
+	err_k_1:=0;
+	t_last := T_PLC_US();
+	T_a := 0.0;
+ELSE
+	tx := T_PLC_US();
+	T_a := DWORD_TO_REAL(tx - t_last);
+	t_last := tx;
+	
+	//proportional term
+	P_J := K_P_J*T_ERR_J;
+	
+	//if necessary - integral term
+	(*
+	err_sum:=err_k_1+T_ERR_J;
+	I_J := I_J_k_1 + K_I_J * err_sum * T_a/2.0 + (T_a/T_R_J)*(y_k-y_sat+y_k_1-y_sat_k_1);		
+	*)
+	
+	I_J :=0;				//if Integral in use --> delete this part------!!!!
+	
+	//output before saturation
+	y_k := P_J + I_J ;
+	
+	//Saturation used to limit Jacket temp.
+	IF LIM_H < y_k THEN
+		y_sat:= LIM_H;
+	ELSIF  LIM_L > y_k THEN
+		y_sat:= LIM_L;
+	ELSE
+		y_sat:= y_k;
+	END_IF	
+	
+	//setting output
+	Y := y_sat;
+	
+	//save variable for next step
+	I_J_k_1 := I_J;			//Saving Integral part for next step
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="FT_P_J">
+      <LineId Id="11" Count="0" />
+      <LineId Id="47" Count="2" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="39" Count="1" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="86" Count="1" />
+      <LineId Id="57" Count="2" />
+      <LineId Id="61" Count="6" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="89" Count="1" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="24" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
