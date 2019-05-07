@@ -132,10 +132,22 @@
     <Compile Include="TemperatureControl\FUN_ComputeMovingSetPoint.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="TemperatureControl\PID_Hoti\FT_GET_GAINS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TemperatureControl\PID_Hoti\FT_PID_CAS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TemperatureControl\PID_Hoti\FT_PID_STERI.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TemperatureControl\PID_Hoti\FT_P_J.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="TemperatureControl\PRG_UpdateTemperatureControl.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="TemperatureControl\PRG_Hoti_TemperatureControl.TcPOU">
+    <Compile Include="TemperatureControl\PRG_BAT_TemperatureControl.TcPOU">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -149,6 +161,7 @@
     <Folder Include="pHOrpControl" />
     <Folder Include="ReactorPressureControl" />
     <Folder Include="TemperatureControl" />
+    <Folder Include="TemperatureControl\PID_Hoti" />
     <Folder Include="TemperatureControl\PID" />
     <Folder Include="MAIN" />
   </ItemGroup>

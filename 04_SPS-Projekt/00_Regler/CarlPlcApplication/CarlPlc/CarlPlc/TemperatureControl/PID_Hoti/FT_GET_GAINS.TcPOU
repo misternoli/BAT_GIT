@@ -31,7 +31,7 @@ END_VAR
 	ELSIF TEMP <81 THEN
 		TempCase := 3 ;		// up to 81°C 
 	ELSIF TEMP <91 THEN				
-		TempCase := 4 ;		// up to 91°C 
+		TempCase := 3 ;		// up to 91°C 
 	ELSIF TEMP >115 THEN
 		TempCase := 5 ;		// for 121°C
 	ELSE
@@ -43,41 +43,42 @@ END_IF
 
 CASE TempCase  OF
 0:	//COOLING --- till 40°C
-	K_P_J := 1;
+	K_P_J := 10;
 	K_I_J := 1;
 	T_R_J := 1;
 	
-	K_P_C := 1;
-	K_I_C := 1;
-	K_D_C := 1;	
-	T_R_C := 1;	
+	K_P_C := 7;
+	K_I_C := 0.0021;
+	K_D_C := 1050;	
+	T_R_C := 714;	
 1:  // HEATING ---for 37°C 
-	K_P_J := 1;
+	K_P_J := 10;
 	K_I_J := 1;
 	T_R_J := 1;
 	
-	K_P_C := 1;
-	K_I_C := 1;
-	K_D_C := 1;	
-	T_R_C := 1;		
+	K_P_C := 182.5;
+	K_I_C := 0.162;
+	K_D_C := 385.9;	
+	T_R_C := 48.77;	
 2:	// HEATING ---for 71°C 
 	K_P_J := 10;
 	K_I_J := 1;
 	T_R_J := 1;
+	
 	K_P_C := 182.5;
 	K_I_C := 0.162;
 	K_D_C := 385.9;	
 	T_R_C := 48.77;
 3:	// HEATING ---for 81°C 
-	K_P_J := 1;
+	K_P_J := 10;
 	K_I_J := 1;
 	T_R_J := 1;
 	
-	K_P_C := 1;
-	K_I_C := 1;
-	K_D_C := 1;	
-	T_R_C := 1;	
-4:	// HEATING --- for 91°C 
+	K_P_C := 107.27;
+	K_I_C := 0.128;
+	K_D_C := 268.18;	
+	T_R_C := 45.65;	
+4:	// HEATING --- for 91°C  ----tbd
 	K_P_J := 1;
 	K_I_J := 1;
 	T_R_J := 1;
@@ -87,14 +88,11 @@ CASE TempCase  OF
 	K_D_C := 1;	
 	T_R_C := 1;	
 5:	// STERIL --- for 121°C 
-	K_P_J := 1;
-	K_I_J := 1;
-	T_R_J := 1;
-	
-	K_P_C := 1;
-	K_I_C := 1;
-	K_D_C := 1;	
-	T_R_C := 1;	
+
+	K_P_C := 0.13;
+	K_I_C := 0.0000349;
+	K_D_C := 9.28;	
+	T_R_C := 515.5;	
 END_CASE]]></ST>
     </Implementation>
     <LineIds Name="FT_GET_GAINS">
@@ -123,11 +121,12 @@ END_CASE]]></ST>
       <LineId Id="70" Count="0" />
       <LineId Id="84" Count="0" />
       <LineId Id="24" Count="0" />
-      <LineId Id="87" Count="6" />
+      <LineId Id="145" Count="6" />
       <LineId Id="59" Count="0" />
       <LineId Id="26" Count="0" />
       <LineId Id="62" Count="1" />
       <LineId Id="108" Count="0" />
+      <LineId Id="144" Count="0" />
       <LineId Id="64" Count="1" />
       <LineId Id="61" Count="0" />
       <LineId Id="109" Count="0" />
@@ -137,7 +136,8 @@ END_CASE]]></ST>
       <LineId Id="67" Count="0" />
       <LineId Id="101" Count="6" />
       <LineId Id="68" Count="0" />
-      <LineId Id="116" Count="7" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="120" Count="3" />
       <LineId Id="115" Count="0" />
       <LineId Id="25" Count="0" />
     </LineIds>
