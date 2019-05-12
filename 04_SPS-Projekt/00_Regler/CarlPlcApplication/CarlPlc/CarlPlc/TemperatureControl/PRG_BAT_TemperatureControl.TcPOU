@@ -37,7 +37,8 @@ VAR
 	// Cooling or Heating for MODE_HEATCOOL;
 	COOLING 				: BOOL := FALSE;
 	HEATING					: BOOL := FALSE;
-		
+	CHANGE_TO_HEATING		: BOOL := FALSE;	
+	
 	errorTemp				: REAL := 0.0;
 	pidReset				: BOOL := FALSE;
 		
@@ -140,13 +141,22 @@ CASE tempControlMode OF
 		(* errorTemp := targetControlTemp - currentMeanTemp; *)
 		errorTemp := FUN_ComputeMovingSetPoint(currentTemp := currentMeanTemp, targetSetPoint := targetControlTemp) - currentMeanTemp;
 		
+		//If temperature close to targetTemp - change to heating
+		IF COOLING = TRUE THEN
+			IF (errorTemp<2) THEN
+				CHANGE_TO_HEATING := TRUE;
+			ELSE
+				CHANGE_TO_HEATING := FALSE;			
+			END_IF
+		END_IF
+		
 		//Setting Heating or Cooling only when TargetTemp is changed or ...
 		// 	...	errorTemp is lower than 2 Degree so it changes to heating - has to be adjusted
-		IF TargetTemp_old = targetControlTemp THEN
+		IF (TargetTemp_old = targetControlTemp) AND (CHANGE_TO_HEATING = FALSE) THEN
 			;
 			ELSE
 				//-----COOLING-----
-			IF (TargetTemp_old > targetControlTemp) AND (targetControlTemp <40) AND (errorTemp > 2) THEN
+			IF (TargetTemp_old > targetControlTemp) AND (targetControlTemp <40) THEN
 				COOLING := TRUE;
 				HEATING := FALSE;
 				GET_GAINS( 	TEMP := targetControlTemp,
@@ -175,16 +185,16 @@ CASE tempControlMode OF
 		END_IF
 		//Save old TargetTemp
 		TargetTemp_old := TargetControlTemp;	 
+		
 		//Start Temp. Controller
 		CAS_Controller(	T_ERR_C := errorTemp,		//Cell Temperatur error 
 						K_P_J 	:= kp_J,
 						K_I_J 	:= ki_J,
-						T_R_J 	:= tr_J,
+						T_R_J 	:= tr_J,			//Tracking time used for Anti-Wind up
 						K_P_C 	:= kp_C,	
 						K_I_C 	:= ki_C,
 						K_D_C 	:= kd_C,			
 						T_R_C	:= tr_C, 			//Tracking time used for Anti-Wind up
-						T_R_J	:= tr_J,			//Tracking time used for Anti-Wind up
 						LIM_L 	:= 0.0,				//Min. Temp for Jacket
 						LIM_H 	:= 90.0,			//Max. Temp for Jacket
 						RST 	:= pidReset,
@@ -228,7 +238,7 @@ CASE tempControlMode OF
 				COOLING := FALSE;
 				HEATING := TRUE;	
 				GET_GAINS( 	TEMP := targetControlTemp,
-							MODE := 0,);
+							MODE := 1,);
 				kp_C := GET_GAINS.K_P_C;
 				ki_C := GET_GAINS.K_I_C;
 				kd_C := GET_GAINS.K_D_C;
@@ -358,7 +368,11 @@ END_IF
       <LineId Id="176" Count="0" />
       <LineId Id="57" Count="0" />
       <LineId Id="698" Count="0" />
+      <LineId Id="1493" Count="0" />
+      <LineId Id="1500" Count="0" />
+      <LineId Id="1494" Count="5" />
       <LineId Id="58" Count="0" />
+      <LineId Id="1492" Count="0" />
       <LineId Id="1106" Count="0" />
       <LineId Id="1421" Count="0" />
       <LineId Id="1084" Count="0" />
@@ -383,11 +397,13 @@ END_IF
       <LineId Id="1089" Count="0" />
       <LineId Id="1105" Count="0" />
       <LineId Id="1104" Count="0" />
+      <LineId Id="1491" Count="0" />
       <LineId Id="1103" Count="0" />
       <LineId Id="59" Count="0" />
       <LineId Id="1057" Count="2" />
       <LineId Id="1072" Count="0" />
-      <LineId Id="1066" Count="5" />
+      <LineId Id="1066" Count="3" />
+      <LineId Id="1071" Count="0" />
       <LineId Id="1064" Count="0" />
       <LineId Id="1082" Count="0" />
       <LineId Id="1062" Count="0" />

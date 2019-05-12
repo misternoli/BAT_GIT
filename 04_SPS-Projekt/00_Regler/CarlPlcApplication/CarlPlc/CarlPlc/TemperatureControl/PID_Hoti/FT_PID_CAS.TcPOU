@@ -67,7 +67,7 @@ ELSE
 	
 	//Integrator term with Anti-Windup backcalculation
 	err_sum:=err_k_1+T_ERR_C;
-	I_C := I_C_k_1 + K_I_C * err_sum * T_a/2.0 + (T_a/T_R_C)*(y_k-y_sat+y_k_1-y_sat_k_1);
+	I_C := I_C_k_1 + K_I_C * err_sum * T_a/2.0 + (T_a/T_R_C)*(y_k-y_sat);
 	
 	//Derivative term
 	D_C := K_D_C * (T_ERR_C-err_k_1)/T_a;
