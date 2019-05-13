@@ -61,6 +61,10 @@ namespace CarlUI
 
             float pwmDutyCycle = 0.0f;
             float jacketTempC = 0.0f;
+            float P_C = 0.0f;
+            float I_C = 0.0f;
+            float D_C = 0.0f;
+            float P_J = 0.0f;
             bool hotvalve = false;
             bool coldvalve = false;
             bool sterivalve = false;
@@ -132,11 +136,16 @@ namespace CarlUI
             
             pwmDutyCycle = myADSClient.ReadSingleFromAds(CADSClient.AdsVariableName.DUTYCYCLE, out success);
             jacketTempC = myADSClient.ReadSingleFromAds(CADSClient.AdsVariableName.JACKETTEMPC, out success);
+            
+            P_C = myADSClient.ReadSingleFromAds(CADSClient.AdsVariableName.P_C, out success);
+            I_C = myADSClient.ReadSingleFromAds(CADSClient.AdsVariableName.I_C, out success);
+            D_C = myADSClient.ReadSingleFromAds(CADSClient.AdsVariableName.D_C, out success);
+            P_J = myADSClient.ReadSingleFromAds(CADSClient.AdsVariableName.P_J, out success);
             //hotvalve = myADSClient.ReadBooleanFromAds(CADSClient.AdsVariableName.HOTVALVE, out success);
             //coldvalve = myADSClient.ReadBooleanFromAds(CADSClient.AdsVariableName.COLDVALVE, out success);
             //sterivalve = myADSClient.ReadBooleanFromAds(CADSClient.AdsVariableName.STERIVALVE, out success);
 
-            datalog.Info($" { df.tPh } , { df.tOrp } , {df.targetControlTemp}, { df.ph } , { df.orp } , { df.rpm }, { df.rpmSet }, {df.targetSteriTemp}, {df.targetSteriTimeMinutes}, {df.steriTimeToGoMinutes}, {df.gasSupplyPressureSetBar}, {df.gasSupplyPressureBar}, ,{df.gasAnalysisCh4PercentSet}, {df.gasAnalysisCh4Percent}, {df.gasAnalysisO2Percent}, ,{df.spargeVolume},{df.roomTempC}, {df.roomRhPercent}, {jacketTempC}, {pwmDutyCycle}");
+            datalog.Info($" { df.tPh } , { df.tOrp } , {jacketTempC}, {df.roomTempC}, {pwmDutyCycle}, {df.targetControlTemp}, {df.targetSteriTemp}, {P_C}, {I_C}, {D_C}, {P_J} ");
         }
 
         private void getInitialSettingsFromPlc()

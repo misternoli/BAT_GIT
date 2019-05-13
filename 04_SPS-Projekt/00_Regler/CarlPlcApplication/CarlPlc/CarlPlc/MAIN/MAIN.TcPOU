@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
   <POU Name="MAIN" Id="{6de127fa-b6f4-4656-b169-9e870eadfc1d}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
@@ -16,7 +16,8 @@ PRG_ReadModbusSensorData();
 
 PRG_UpdateMotor();
 
-PRG_UpdateTemperatureControl();
+//PRG_UpdateTemperatureControl();
+PRG_BAT_TemperatureControl();
 
 PRG_UpdatePressureSensor();
 PRG_UpdateFlowRateSensor();
@@ -34,6 +35,7 @@ PRG_GasAnalysis();]]></ST>
       <LineId Id="32" Count="0" />
       <LineId Id="37" Count="0" />
       <LineId Id="36" Count="0" />
+      <LineId Id="71" Count="0" />
       <LineId Id="51" Count="0" />
       <LineId Id="50" Count="0" />
       <LineId Id="52" Count="1" />

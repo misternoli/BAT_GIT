@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.7">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.12">
   <GVL Name="GVL_TemperatureControl" Id="{92f0593a-90ab-4fcc-a23e-30239ee482b5}">
     <Declaration><![CDATA[VAR_GLOBAL
 
@@ -15,6 +15,8 @@
 	coldValve			AT %Q* 	: BOOL := FALSE;
 	hotValve			AT %Q* 	: BOOL := FALSE;
 	steriValve			AT %Q*	: BOOL := FALSE; 
+	//
+	pwmDutyCycle				: REAL := 0.0;	
 	
 	jacketTempRaw		AT %I*	: INT;
 	jacketTempC					: REAL := 0.0;

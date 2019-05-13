@@ -121,6 +121,11 @@ namespace TGReactorLibrary
             , JACKETTEMPC
             , DUTYCYCLE
             , LOOPCOUNTER
+            , P_C
+            , I_C
+            , D_C
+            , P_J
+
         }
 
         public CADSClient(string netID, int srvPort)
@@ -201,13 +206,19 @@ namespace TGReactorLibrary
             varList.Add(new AdsVariable() { VariableNameEnum = AdsVariableName.ROOMT, VariableName = "GVL_TempRHSensor.roomTemp", DataType = AdsVariable.VariableType.DT_SINGLE, Direction = AdsVariable.DataFlow.FROMADS });
             varList.Add(new AdsVariable() { VariableNameEnum = AdsVariableName.ROOMRH, VariableName = "GVL_TempRHSensor.roomRh", DataType = AdsVariable.VariableType.DT_SINGLE, Direction = AdsVariable.DataFlow.FROMADS });
 
+            // Control variable
+            varList.Add(new AdsVariable() { VariableNameEnum = AdsVariableName.P_C, VariableName = "PRG_BAT_TemperatureControl.CAS_Controller.P_C", DataType = AdsVariable.VariableType.DT_SINGLE, Direction = AdsVariable.DataFlow.FROMADS });
+            varList.Add(new AdsVariable() { VariableNameEnum = AdsVariableName.I_C, VariableName = "PRG_BAT_TemperatureControl.CAS_Controller.I_C", DataType = AdsVariable.VariableType.DT_SINGLE, Direction = AdsVariable.DataFlow.FROMADS });
+            varList.Add(new AdsVariable() { VariableNameEnum = AdsVariableName.D_C, VariableName = "PRG_BAT_TemperatureControl.CAS_Controller.D_C", DataType = AdsVariable.VariableType.DT_SINGLE, Direction = AdsVariable.DataFlow.FROMADS });
+            varList.Add(new AdsVariable() { VariableNameEnum = AdsVariableName.P_J, VariableName = "PRG_BAT_TemperatureControl.CAS_Controller.J_Controll.P_J", DataType = AdsVariable.VariableType.DT_SINGLE, Direction = AdsVariable.DataFlow.FROMADS });
+
 
             varList.Add(new AdsVariable() { VariableNameEnum = AdsVariableName.LOOPCOUNTER, VariableName = "GVL_Common.loopCounter", DataType = AdsVariable.VariableType.DT_INT16, Direction = AdsVariable.DataFlow.FROMADS });
 
 
 
             // temp % duty cycle for testing
-            varList.Add(new AdsVariable() { VariableNameEnum = AdsVariableName.DUTYCYCLE, VariableName = "PRG_UpdateTemperatureControl.pwmDutyCycle", DataType = AdsVariable.VariableType.DT_SINGLE, Direction = AdsVariable.DataFlow.FROMADS });
+            varList.Add(new AdsVariable() { VariableNameEnum = AdsVariableName.DUTYCYCLE, VariableName = "GVL_TemperatureControl.pwmDutyCycle", DataType = AdsVariable.VariableType.DT_SINGLE, Direction = AdsVariable.DataFlow.FROMADS });
             varList.Add(new AdsVariable() { VariableNameEnum = AdsVariableName.RESETSPAREVOLUME, VariableName = "GVL_FlowControl.resetSpargeVolume", DataType = AdsVariable.VariableType.DT_BOOL, Direction = AdsVariable.DataFlow.TOFROMADS });
 
             //tAdsConnectorThread = new System.Threading.Thread(new System.Threading.ThreadStart(ThreadStart(netID, srvPort)));

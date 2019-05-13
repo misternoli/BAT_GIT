@@ -105,19 +105,19 @@
 					<Vars VarGrpType="1">
 						<Name>PlcTask Inputs</Name>
 						<Var>
+							<Name>GVL_FlowControl.flowRateRawCounts</Name>
+							<Comment>
+								<![CDATA[ flow meter ]]>
+							</Comment>
+							<Type>INT</Type>
+						</Var>
+						<Var>
 							<Name>GVL_Common.PhModbus.InData</Name>
 							<Type GUID="{7AB6378B-554A-4A20-9085-25E8F62B2B6D}" Namespace="Tc2_ModbusRTU">MB_KL6inData22B</Type>
 						</Var>
 						<Var>
 							<Name>GVL_Common.OrpModbus.InData</Name>
 							<Type GUID="{7AB6378B-554A-4A20-9085-25E8F62B2B6D}" Namespace="Tc2_ModbusRTU">MB_KL6inData22B</Type>
-						</Var>
-						<Var>
-							<Name>GVL_FlowControl.flowRateRawCounts</Name>
-							<Comment>
-								<![CDATA[ flow meter ]]>
-							</Comment>
-							<Type>INT</Type>
 						</Var>
 						<Var>
 							<Name>GVL_GasAnalysis.ch4FlowSensor</Name>
@@ -181,15 +181,15 @@
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
+							<Name>GVL_MotorControl.motorTargetSpeed</Name>
+							<Type>INT</Type>
+						</Var>
+						<Var>
 							<Name>GVL_MotorControl.motorStart</Name>
 							<Comment>
 								<![CDATA[ motor target speed setting --> see retains ]]>
 							</Comment>
 							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_MotorControl.motorTargetSpeed</Name>
-							<Type>INT</Type>
 						</Var>
 						<Var>
 							<Name>GVL_MotorControl.motorReset</Name>

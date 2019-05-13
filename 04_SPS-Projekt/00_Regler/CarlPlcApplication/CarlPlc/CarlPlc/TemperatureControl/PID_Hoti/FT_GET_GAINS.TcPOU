@@ -70,23 +70,23 @@ CASE TempCase  OF
 	K_D_C := 385.9;	
 	T_R_C := 48.77;
 3:	// HEATING ---for 81°C 
-	K_P_J := 10;
+	K_P_J := 0.05;
 	K_I_J := 1;
 	T_R_J := 1;
 	
-	K_P_C := 107.27;
-	K_I_C := 0.128;
-	K_D_C := 268.18;	
-	T_R_C := 45.65;	
+	K_P_C := 62.5;
+	K_I_C := 0.06;
+	K_D_C := 0;	
+	T_R_C := 31.6;	
 4:	// HEATING --- for 91°C  ----tbd
 	K_P_J := 1;
 	K_I_J := 1;
 	T_R_J := 1;
 	
-	K_P_C := 1;
-	K_I_C := 1;
-	K_D_C := 1;	
-	T_R_C := 1;	
+	K_P_C := 62.5;
+	K_I_C := 0.06;
+	K_D_C := 0;	
+	T_R_C := 31.6;
 5:	// STERIL --- for 121°C 
 
 	K_P_C := 0.13;
@@ -134,7 +134,8 @@ END_CASE]]></ST>
       <LineId Id="94" Count="6" />
       <LineId Id="71" Count="0" />
       <LineId Id="67" Count="0" />
-      <LineId Id="101" Count="6" />
+      <LineId Id="101" Count="3" />
+      <LineId Id="172" Count="2" />
       <LineId Id="68" Count="0" />
       <LineId Id="116" Count="0" />
       <LineId Id="120" Count="3" />

@@ -9,7 +9,7 @@ VAR
 
 	(* Controller settings *)
 	pwmPeriodinSec			: TIME := T#25S;
-	pwmDutyCycle			: REAL := 0.0;	
+	//pwmDutyCycle			: REAL := 0.0;	
 	pwmOutputValveControl 	: FB_PWM;
 	
 	//Controling Temperatur for 20°C to 90°C
@@ -138,12 +138,12 @@ CASE tempControlMode OF
 	EN_TempControlMode.TEMP_MODE_HEATCOOL:
 		
 		pumpOn := TRUE;
-		(* errorTemp := targetControlTemp - currentMeanTemp; *)
-		errorTemp := FUN_ComputeMovingSetPoint(currentTemp := currentMeanTemp, targetSetPoint := targetControlTemp) - currentMeanTemp;
+		errorTemp := targetControlTemp - currentMeanTemp;
+		//errorTemp := FUN_ComputeMovingSetPoint(currentTemp := currentMeanTemp, targetSetPoint := targetControlTemp) - currentMeanTemp;
 		
 		//If temperature close to targetTemp - change to heating
 		IF COOLING = TRUE THEN
-			IF (errorTemp<2) THEN
+			IF (errorTemp<-2) THEN
 				CHANGE_TO_HEATING := TRUE;
 			ELSE
 				CHANGE_TO_HEATING := FALSE;			
@@ -153,10 +153,10 @@ CASE tempControlMode OF
 		//Setting Heating or Cooling only when TargetTemp is changed or ...
 		// 	...	errorTemp is lower than 2 Degree so it changes to heating - has to be adjusted
 		IF (TargetTemp_old = targetControlTemp) AND (CHANGE_TO_HEATING = FALSE) THEN
-			;
+			
 			ELSE
 				//-----COOLING-----
-			IF (TargetTemp_old > targetControlTemp) AND (targetControlTemp <40) THEN
+			IF (TargetTemp_old > targetControlTemp) OR (errorTemp<0) THEN
 				COOLING := TRUE;
 				HEATING := FALSE;
 				GET_GAINS( 	TEMP := targetControlTemp,
@@ -169,7 +169,7 @@ CASE tempControlMode OF
 				kd_C := GET_GAINS.K_D_C;
 				tr_C := GET_GAINS.T_R_C;
 				//-----HEATING-----
-			ELSE
+			ELSIF (TargetTemp_old < targetControlTemp) OR (errorTemp > 0) THEN
 				COOLING := FALSE;
 				HEATING := TRUE;	
 				GET_GAINS( 	TEMP := targetControlTemp,
@@ -188,6 +188,7 @@ CASE tempControlMode OF
 		
 		//Start Temp. Controller
 		CAS_Controller(	T_ERR_C := errorTemp,		//Cell Temperatur error 
+						MODE	:= COOLING,			//Cooling?
 						K_P_J 	:= kp_J,
 						K_I_J 	:= ki_J,
 						T_R_J 	:= tr_J,			//Tracking time used for Anti-Wind up
@@ -200,7 +201,7 @@ CASE tempControlMode OF
 						RST 	:= pidReset,
 						);
 												
-		pwmDutyCycle := CAS_Controller.P_J_Controll.Y; (* !! pwm block cannot handle negative inputs *)
+		pwmDutyCycle := CAS_Controller.J_Controll.Y; (* !! pwm block cannot handle negative inputs *)
 		//pwmDutyCycle := 1;
 
 		pwmOutputValveControl(pwmCycleTime:=pwmPeriodinSec, pwmDutyCycle:=pwmDutyCycle);	
@@ -369,8 +370,7 @@ END_IF
       <LineId Id="57" Count="0" />
       <LineId Id="698" Count="0" />
       <LineId Id="1493" Count="0" />
-      <LineId Id="1500" Count="0" />
-      <LineId Id="1494" Count="5" />
+      <LineId Id="1588" Count="6" />
       <LineId Id="58" Count="0" />
       <LineId Id="1492" Count="0" />
       <LineId Id="1106" Count="0" />
@@ -400,6 +400,7 @@ END_IF
       <LineId Id="1491" Count="0" />
       <LineId Id="1103" Count="0" />
       <LineId Id="59" Count="0" />
+      <LineId Id="1556" Count="0" />
       <LineId Id="1057" Count="2" />
       <LineId Id="1072" Count="0" />
       <LineId Id="1066" Count="3" />

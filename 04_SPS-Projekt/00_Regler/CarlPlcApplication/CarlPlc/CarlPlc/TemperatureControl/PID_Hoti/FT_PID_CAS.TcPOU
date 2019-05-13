@@ -4,6 +4,7 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FT_PID_CAS
 VAR_INPUT
 	T_ERR_C	: REAL;					//Error
+	MODE 	: BOOL;
 	//Jacket
 	K_P_J 	: REAL := 1.0; 
 	K_I_J	: REAL := 1.0;	
@@ -33,7 +34,7 @@ VAR
 	P_J 	: REAL :=1.0;
 	
 	//Control for Jacket
-	P_J_Controll : FT_P_J ;
+	J_Controll : FT_P_J ;
 	
 	//Saturation
 	y_k		: REAL;			//control signal 
@@ -44,9 +45,10 @@ VAR
 	I_C_k_1	: REAL ; 		//I-Part old
 	
 	T_ERR_J : REAL ;			
+	T_ERR_J_N : REAL ;	
 	
 	tx		: DWORD;
-	T_a		: REAL;			//Sampling Time
+	T_a		: REAL := 0.01;			//Sampling Time
 	t_last	: DWORD;
 END_VAR]]></Declaration>
     <Implementation>
@@ -55,22 +57,28 @@ IF rst THEN		//Reset -- tbd
 	err_sum:=0;
 	err_k_1:=0;
 	t_last := T_PLC_US();
-	T_a := 0.0;
+	T_a := 0.010;
+	I_C :=0;
+	D_C :=0;
 ELSE
 	//read last cycle time in Microseconds
 	tx := T_PLC_US();
-	T_a := DWORD_TO_REAL(tx - t_last);
+	T_a := DWORD_TO_REAL(tx - t_last)/1000000;
 	t_last := tx;
-
+	
+	IF (MODE = TRUE) THEN
+		T_ERR_C:=(T_ERR_C*-1);	
+	END_IF
+	
 	//proportional term
 	P_C := K_P_C*T_ERR_C;
 	
 	//Integrator term with Anti-Windup backcalculation
 	err_sum:=err_k_1+T_ERR_C;
-	I_C := I_C_k_1 + K_I_C * err_sum * T_a/2.0 + (T_a/T_R_C)*(y_k-y_sat);
+	I_C := I_C_k_1 + K_I_C * err_sum * T_a/2.0 + (T_a/T_R_C)*(y_sat-y_k);
 	
 	//Derivative term
-	D_C := K_D_C * (T_ERR_C-err_k_1)/T_a;
+	//D_C := K_D_C * (T_ERR_C-err_k_1);//T_a;
 	
 	//output before saturation
 	y_k := P_C + I_C + D_C;
@@ -88,10 +96,14 @@ ELSE
 	Y	:= y_sat;	
 	
 	//Jacket ERROR
-	T_ERR_J := jacketTempC - Y;
+	T_ERR_J := Y - jacketTempC;
+	
+	//IF (MODE = TRUE) THEN
+	//T_ERR_J:=(T_ERR_J*-1);	
+	//END_IF
 	
 	//Jacket Controll
-	P_J_Controll (	T_ERR_J := T_ERR_J, 
+	J_Controll (	T_ERR_J := T_ERR_J, 
 					K_P_J := K_P_J,
 					K_I_J := K_I_J,
 					T_R_J := T_R_J,
@@ -109,9 +121,12 @@ END_IF]]></ST>
       <LineId Id="43" Count="0" />
       <LineId Id="55" Count="0" />
       <LineId Id="54" Count="0" />
+      <LineId Id="200" Count="1" />
       <LineId Id="9" Count="0" />
       <LineId Id="47" Count="3" />
       <LineId Id="46" Count="0" />
+      <LineId Id="192" Count="2" />
+      <LineId Id="188" Count="0" />
       <LineId Id="36" Count="0" />
       <LineId Id="24" Count="0" />
       <LineId Id="32" Count="1" />
@@ -134,6 +149,10 @@ END_IF]]></ST>
       <LineId Id="113" Count="0" />
       <LineId Id="127" Count="0" />
       <LineId Id="114" Count="0" />
+      <LineId Id="176" Count="0" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="179" Count="0" />
       <LineId Id="128" Count="0" />
       <LineId Id="98" Count="0" />
       <LineId Id="111" Count="0" />
