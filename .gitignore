@@ -5,6 +5,8 @@
 *.g_c
 *.g_x
 *.xlsx
+*.dll
+*.exe
 *pdf
 *docx
 *.cwGeneratedFileSetLog
