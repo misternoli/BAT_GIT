@@ -36,6 +36,8 @@ VAR
 	//Control for Jacket
 	J_Controll : FT_P_J ;
 	
+	oldMode : BOOL;
+	
 	//Saturation
 	y_k		: REAL;			//control signal 
 	y_sat   : REAL;			//Control signal after saturation
@@ -70,12 +72,16 @@ ELSE
 		T_ERR_C:=(T_ERR_C*-1);	
 	END_IF
 	
+	IF (oldMode <> MODE) THEN
+		I_C_k_1 := 0;
+	END_IF
+	
 	//proportional term
 	P_C := K_P_C*T_ERR_C;
 	
 	//Integrator term with Anti-Windup backcalculation
 	err_sum:=err_k_1+T_ERR_C;
-	I_C := I_C_k_1 + K_I_C * err_sum * T_a/2.0 + (T_a/T_R_C)*(y_sat-y_k);
+	I_C := I_C_k_1 + K_I_C * err_sum * T_a/2.0 + //(T_a/T_R_C)*(y_sat-y_k);
 	
 	//Derivative term
 	//D_C := K_D_C * (T_ERR_C-err_k_1);//T_a;
@@ -95,8 +101,14 @@ ELSE
 	//setting output
 	Y	:= y_sat;	
 	
-	//Jacket ERROR
-	T_ERR_J := Y - jacketTempC;
+	IF (MODE = TRUE) THEN
+		T_ERR_J :=jacketTempC -Y;	
+	ELSE
+		//Jacket ERROR
+		T_ERR_J := Y - jacketTempC;	
+	END_IF	
+	
+	oldMode:= MODE;
 	
 	//IF (MODE = TRUE) THEN
 	//T_ERR_J:=(T_ERR_J*-1);	
@@ -127,6 +139,9 @@ END_IF]]></ST>
       <LineId Id="46" Count="0" />
       <LineId Id="192" Count="2" />
       <LineId Id="188" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="216" Count="1" />
+      <LineId Id="215" Count="0" />
       <LineId Id="36" Count="0" />
       <LineId Id="24" Count="0" />
       <LineId Id="32" Count="1" />
@@ -146,9 +161,12 @@ END_IF]]></ST>
       <LineId Id="97" Count="0" />
       <LineId Id="27" Count="0" />
       <LineId Id="96" Count="0" />
-      <LineId Id="113" Count="0" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="205" Count="3" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="209" Count="0" />
       <LineId Id="127" Count="0" />
-      <LineId Id="114" Count="0" />
+      <LineId Id="218" Count="0" />
       <LineId Id="176" Count="0" />
       <LineId Id="197" Count="0" />
       <LineId Id="199" Count="0" />

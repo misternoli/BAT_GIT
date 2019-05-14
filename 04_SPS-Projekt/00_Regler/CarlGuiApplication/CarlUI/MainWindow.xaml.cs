@@ -145,7 +145,7 @@ namespace CarlUI
             //coldvalve = myADSClient.ReadBooleanFromAds(CADSClient.AdsVariableName.COLDVALVE, out success);
             //sterivalve = myADSClient.ReadBooleanFromAds(CADSClient.AdsVariableName.STERIVALVE, out success);
 
-            datalog.Info($" { df.tPh } , { df.tOrp } , {jacketTempC}, {df.roomTempC}, {pwmDutyCycle}, {df.targetControlTemp}, {df.targetSteriTemp}, {P_C}, {I_C}, {D_C}, {P_J} ");
+            datalog.Info($" { df.tOrp } ; {jacketTempC}; {df.roomTempC}; {pwmDutyCycle}; {df.targetControlTemp}; {df.targetSteriTemp}; {P_C}; {I_C}; {D_C}; {P_J} ");
         }
 
         private void getInitialSettingsFromPlc()

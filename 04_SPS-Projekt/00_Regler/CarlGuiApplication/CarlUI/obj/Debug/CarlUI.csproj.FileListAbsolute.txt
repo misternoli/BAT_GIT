@@ -32,10 +32,8 @@ D:\twentygreen\40_Software\CarlGuiApplication\CarlUI\obj\Debug\DataPlotter.baml
 C:\Users\arbno\Dropbox\BAT\04_SPS-Projekt\Version_5\CarlGuiApplication\CarlUI\bin\Debug\CarlUI.exe.config
 C:\Users\arbno\Dropbox\BAT\04_SPS-Projekt\Version_5\CarlGuiApplication\CarlUI\obj\Debug\CarlUI.exe
 C:\Users\arbno\Dropbox\BAT\04_SPS-Projekt\Version_5\CarlGuiApplication\CarlUI\obj\Debug\CarlUI.pdb
-C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\bin\Debug\CarlUI.exe.config
-C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\obj\Debug\CarlUI.exe
-C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\obj\Debug\CarlUI.pdb
 C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\bin\Debug\log4net.config
+C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\bin\Debug\CarlUI.exe.config
 C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\bin\Debug\CarlUI.exe
 C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\bin\Debug\CarlUI.pdb
 C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\bin\Debug\log4net.dll
@@ -62,3 +60,5 @@ C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplica
 C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\obj\Debug\CarlUI.g.resources
 C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\obj\Debug\CarlUI.Properties.Resources.resources
 C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\obj\Debug\CarlUI.csproj.GenerateResource.Cache
+C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\obj\Debug\CarlUI.exe
+C:\Users\arbno\Desktop\HSLU\SEM8\BAT_GIT\04_SPS-Projekt\00_Regler\CarlGuiApplication\CarlUI\obj\Debug\CarlUI.pdb

@@ -18,6 +18,8 @@ VAR
 	//Controling Temperatur above 90°C
 	STERI_Controller		: FT_PID_STERI;
 	
+	dTemp : REAL;
+	
 	//GET_GAINS
 	GET_GAINS				: FT_GET_GAINS;
 	//GAINS JACKET
@@ -141,22 +143,24 @@ CASE tempControlMode OF
 		errorTemp := targetControlTemp - currentMeanTemp;
 		//errorTemp := FUN_ComputeMovingSetPoint(currentTemp := currentMeanTemp, targetSetPoint := targetControlTemp) - currentMeanTemp;
 		
-		//If temperature close to targetTemp - change to heating
-		IF COOLING = TRUE THEN
-			IF (errorTemp<-2) THEN
-				CHANGE_TO_HEATING := TRUE;
-			ELSE
-				CHANGE_TO_HEATING := FALSE;			
-			END_IF
-		END_IF
+
 		
 		//Setting Heating or Cooling only when TargetTemp is changed or ...
 		// 	...	errorTemp is lower than 2 Degree so it changes to heating - has to be adjusted
 		IF (TargetTemp_old = targetControlTemp) AND (CHANGE_TO_HEATING = FALSE) THEN
-			
-			ELSE
+			//If temperature close to targetTemp - change to heating
+			IF COOLING = TRUE THEN
+				dTemp := currentMeanTemp-targetControlTemp;
+				IF (dTemp < 2.5) THEN
+					//TargetTemp_old:=10;
+					COOLING := FALSE;
+					HEATING := TRUE;	
+					CHANGE_TO_HEATING := TRUE;
+				END_IF
+			END_IF
+		ELSE
 				//-----COOLING-----
-			IF (TargetTemp_old > targetControlTemp) OR (errorTemp<0) THEN
+			IF (TargetTemp_old > targetControlTemp) AND (CHANGE_TO_HEATING = FALSE) THEN
 				COOLING := TRUE;
 				HEATING := FALSE;
 				GET_GAINS( 	TEMP := targetControlTemp,
@@ -169,9 +173,10 @@ CASE tempControlMode OF
 				kd_C := GET_GAINS.K_D_C;
 				tr_C := GET_GAINS.T_R_C;
 				//-----HEATING-----
-			ELSIF (TargetTemp_old < targetControlTemp) OR (errorTemp > 0) THEN
+			ELSIF (TargetTemp_old < targetControlTemp) OR (CHANGE_TO_HEATING = TRUE) THEN
 				COOLING := FALSE;
 				HEATING := TRUE;	
+				CHANGE_TO_HEATING := FALSE;				//set to start...
 				GET_GAINS( 	TEMP := targetControlTemp,
 							MODE := 1,);
 				kp_J := GET_GAINS.K_P_J;
@@ -370,12 +375,17 @@ END_IF
       <LineId Id="57" Count="0" />
       <LineId Id="698" Count="0" />
       <LineId Id="1493" Count="0" />
-      <LineId Id="1588" Count="6" />
       <LineId Id="58" Count="0" />
       <LineId Id="1492" Count="0" />
       <LineId Id="1106" Count="0" />
       <LineId Id="1421" Count="0" />
       <LineId Id="1084" Count="0" />
+      <LineId Id="1595" Count="1" />
+      <LineId Id="1605" Count="0" />
+      <LineId Id="1597" Count="1" />
+      <LineId Id="1608" Count="0" />
+      <LineId Id="1602" Count="1" />
+      <LineId Id="1601" Count="0" />
       <LineId Id="1086" Count="1" />
       <LineId Id="1422" Count="0" />
       <LineId Id="1088" Count="0" />
@@ -391,6 +401,7 @@ END_IF
       <LineId Id="1098" Count="0" />
       <LineId Id="1102" Count="0" />
       <LineId Id="1099" Count="0" />
+      <LineId Id="1604" Count="0" />
       <LineId Id="1163" Count="7" />
       <LineId Id="1162" Count="0" />
       <LineId Id="1091" Count="0" />

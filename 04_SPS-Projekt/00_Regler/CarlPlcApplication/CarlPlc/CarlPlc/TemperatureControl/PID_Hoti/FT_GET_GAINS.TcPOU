@@ -25,9 +25,9 @@ END_VAR
     <Implementation>
       <ST><![CDATA[IF MODE= TRUE THEN			//HEATING
 	IF TEMP < 40 THEN
-		TempCase := 1 ;		// 37°C 
+		TempCase := 3 ;		// 37°C 
 	ELSIF TEMP <71 THEN
-		TempCase := 2 ;		// up to 71°C 
+		TempCase := 3 ;		// up to 71°C 
 	ELSIF TEMP <81 THEN
 		TempCase := 3 ;		// up to 81°C 
 	ELSIF TEMP <91 THEN				
@@ -43,14 +43,14 @@ END_IF
 
 CASE TempCase  OF
 0:	//COOLING --- till 40°C
-	K_P_J := 10;
+	K_P_J := 0.05;
 	K_I_J := 1;
 	T_R_J := 1;
 	
 	K_P_C := 7;
 	K_I_C := 0.0021;
-	K_D_C := 1050;	
-	T_R_C := 714;	
+	//K_D_C := 1050;	
+	T_R_C := 21;	
 1:  // HEATING ---for 37°C 
 	K_P_J := 10;
 	K_I_J := 1;
@@ -61,7 +61,7 @@ CASE TempCase  OF
 	K_D_C := 385.9;	
 	T_R_C := 48.77;	
 2:	// HEATING ---for 71°C 
-	K_P_J := 10;
+	K_P_J := 0.05;
 	K_I_J := 1;
 	T_R_J := 1;
 	
